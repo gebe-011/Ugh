@@ -1,0 +1,21 @@
+local player = game:GetService("Players").LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+
+local level = player:WaitForChild("ProfileStats"):WaitForChild("Level").Value
+
+if level <= 9 then
+    print("N")
+else
+    print("Y")
+    local args = {
+        [1] = "OTOYA!!"
+    }
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("CodesService"):WaitForChild("RF"):WaitForChild("Redeem"):InvokeServer(unpack(args))
+
+    local args = {
+        [1] = "CHEMREACTION!"
+    }
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("CodesService"):WaitForChild("RF"):WaitForChild("Redeem"):InvokeServer(unpack(args))
+end
