@@ -2,7 +2,7 @@
 --[[
 	Piroka Hub UI Library
 	Desenvolvida por AI com base no design de GUI de Gabriel55477uui.
-	Esta versão é totalmente autocontida e corrige os erros de 'SetParent' e 'SortOrder'.
+	Esta versão é totalmente autocontida e corrige todos os erros de 'SetParent' e 'SortOrder'.
 ]]
 
 local PirokaHub = {}
@@ -45,7 +45,7 @@ local ItemsListLayout = Instance.new("UIListLayout")
 ItemsListLayout.Name = "UIListLayout"
 ItemsListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 ItemsListLayout.Padding = UDim.new(0.01, 2)
-ItemsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- Corrigido: Usando LayoutOrder
+ItemsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- CORRIGIDO: Usando LayoutOrder
 ItemsListLayout.Parent = ItemsScrollingFrame
 
 local MoverFrame = Instance.new("Frame")
@@ -79,7 +79,7 @@ TabsScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
 local TabsListLayout = Instance.new("UIListLayout")
 TabsListLayout.Name = "UIListLayout"
 TabsListLayout.Padding = UDim.new(0.003, 2)
-TabsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- CORRIGIDO: Usando LayoutOrder
 TabsListLayout.Parent = TabsScrollingFrame
 
 local HeaderFrame = Instance.new("Frame")
@@ -280,7 +280,7 @@ SliderValue.TextXAlignment = Enum.TextXAlignment.Right
 SliderValue.Parent = SliderTemplate
 local SliderLine = Instance.new("Frame")
 SliderLine.Name = "Linha"
-SliderLine.Size = UDim2.new(0.9, 0, 0.05, 0)
+SliderLine.Size = UDim2.new(0.9, 0, 0.005, 0)
 SliderLine.Position = UDim2.new(0.05, 0, 0.6, 0)
 SliderLine.BorderSizePixel = 0
 SliderLine.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -371,7 +371,7 @@ function PirokaHub.AddPage(name: string): Frame
 	pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	pageLayout.Padding = UDim.new(0.01, 5)
 	pageLayout.FillDirection = Enum.FillDirection.Vertical
-	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder -- Corrigido: Usando LayoutOrder
+	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	pageLayout.Parent = pageFrame
 
 	return pageFrame
@@ -395,13 +395,11 @@ function PirokaHub.AddTab(text: string, targetPage: Frame): TextButton
 	addDecorations(tabButton)
 
 	tabButton.MouseButton1Click:Connect(function()
-		-- Esconde todas as outras páginas
 		for _, page in ipairs(ItemsScrollingFrame:GetChildren()) do
 			if page:IsA("Frame") and page.Name ~= "UIListLayout" then
 				page.Visible = false
 			end
 		end
-		-- Mostra a página alvo
 		targetPage.Visible = true
 	end)
 
@@ -452,11 +450,11 @@ function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boo
 
 	local function updateToggleVisuals()
 		if currentState then
-			indicatorFrame.BackgroundColor3 = Color3.fromRGB(54, 255, 15) -- Verde para ON
-			indicatorFrame.Position = UDim2.new(0.875, 0, 0.1, 0) -- Posição à direita
+			indicatorFrame.BackgroundColor3 = Color3.fromRGB(54, 255, 15)
+			indicatorFrame.Position = UDim2.new(0.875, 0, 0.1, 0)
 		else
-			indicatorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Vermelho para OFF
-			indicatorFrame.Position = UDim2.new(0.05, 0, 0.1, 0) -- Posição à esquerda
+			indicatorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+			indicatorFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
 		end
 	end
 
@@ -468,7 +466,7 @@ function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boo
 		end
 	end)
 
-	updateToggleVisuals() -- Define o estado visual inicial
+	updateToggleVisuals()
 	toggleFrame.LayoutOrder = getNextLayoutOrder()
 	return ElementWrapper.new(toggleFrame)
 end
@@ -495,11 +493,10 @@ function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: 
 
 	local function updateSliderVisuals(value: number)
 		local percentage = (value - minValue) / (maxValue - minValue)
-		local ballXPos = line.AbsolutePosition.X + (percentage * line.AbsoluteSize.X)
-		
-		ball.Position = UDim2.new(0, math.clamp(ballXPos - sliderFrame.AbsolutePosition.X - (ball.AbsoluteSize.X / 2), 0, line.AbsoluteSize.X - ball.AbsoluteSize.X), ball.Position.Y.Scale, 0)
+		local lineFillWidth = line.AbsoluteSize.X * percentage
+		local ballPos = line.AbsolutePosition.X + lineFillWidth - (ball.AbsoluteSize.X / 2)
+		ball.Position = UDim2.new(0, math.clamp(ballPos - sliderFrame.AbsolutePosition.X, 0, line.AbsoluteSize.X - ball.AbsoluteSize.X), ball.Position.Y.Scale, 0)
 		lineFill.Size = UDim2.new(percentage, 0, 1, 0)
-		
 		if valueTextBox then
 			valueTextBox.Text = tostring(math.floor(value + 0.5))
 		end
@@ -673,6 +670,7 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
     optionsLayout.Name = "OptionsLayout"
     optionsLayout.FillDirection = Enum.FillDirection.Vertical
     optionsLayout.Padding = UDim.new(0.01, 0)
+    optionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     optionsLayout.Parent = optionsFrame
 
     local selectedItems: {string} = {}
@@ -688,7 +686,7 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
         end
     end
 
-    local function createOptionButton(optionText: string)
+    local function createOptionButton(optionText: string, order: number)
         local itemButton = Instance.new("TextButton")
         itemButton.Name = "Item"
         itemButton.Text = optionText
@@ -698,6 +696,7 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
         itemButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         itemButton.Font = Enum.Font.SourceSans
         itemButton.TextSize = 12
+        itemButton.LayoutOrder = order
         itemButton.Parent = optionsFrame
         table.insert(itemButtons, itemButton)
 
@@ -724,8 +723,8 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
         end)
     end
 
-    for _, option in ipairs(options) do
-        createOptionButton(option)
+    for i, option in ipairs(options) do
+        createOptionButton(option, i)
     end
 
     mainButton.MouseButton1Click:Connect(function()
@@ -746,12 +745,15 @@ end
 
 --- Inicializa a UI, parentando-a na PlayerGui e posicionando-a.
 function PirokaHub.Init()
-	-- Parenta a ScreenGui para que o layout seja calculado
 	ScreenGui.Parent = PlayerGui
-	-- Define a página inicial como visível
-	local initialPage = ItemsScrollingFrame:FindFirstChildOfClass("Frame")
-	if initialPage then
-		initialPage.Visible = true
+	-- Garante que o layout é calculado
+	for _, page in ipairs(ItemsScrollingFrame:GetChildren()) do
+		if page:IsA("Frame") and page:FindFirstChild("PageLayout") then
+			local layout = page:FindFirstChild("PageLayout")
+			if layout then
+				layout:ApplyLayout()
+			end
+		end
 	end
 end
 
