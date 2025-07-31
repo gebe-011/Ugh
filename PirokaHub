@@ -2,7 +2,7 @@
 --[[
 	Piroka Hub UI Library
 	Desenvolvida por AI com base no design de GUI de Gabriel55477uui.
-	Este script é totalmente autocontido e não requer uma pasta 'Element' separada.
+	Esta versão é totalmente autocontida e corrige os erros de 'SetParent' e 'SortOrder'.
 ]]
 
 local PirokaHub = {}
@@ -12,7 +12,6 @@ PirokaHub.__index = PirokaHub
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local ProximityPromptService = game:GetService("ProximityPromptService")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -24,11 +23,12 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "Piroka Hub"
 MainFrame.Size = UDim2.new(0.36274, 0, 0.50592, 0)
-MainFrame.Position = UDim2.new(0.32326, 0, 0.10841, 0)
+MainFrame.Position = UDim2.fromScale(0.5, 0.5) -- Posição inicial no centro
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundColor3 = Color3.fromRGB(103, 52, 4)
 MainFrame.BackgroundTransparency = 0.5
-MainFrame.Visible = true -- Por padrão, a GUI é visível
+MainFrame.Visible = true
 
 local ItemsScrollingFrame = Instance.new("ScrollingFrame")
 ItemsScrollingFrame.Name = "Itens"
@@ -39,13 +39,13 @@ ItemsScrollingFrame.BackgroundColor3 = Color3.fromRGB(255, 44, 173)
 ItemsScrollingFrame.BackgroundTransparency = 1
 ItemsScrollingFrame.ScrollBarThickness = 0
 ItemsScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-ItemsScrollingFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
+ItemsScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 local ItemsListLayout = Instance.new("UIListLayout")
 ItemsListLayout.Name = "UIListLayout"
 ItemsListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 ItemsListLayout.Padding = UDim.new(0.01, 2)
-ItemsListLayout.SortOrder = Enum.SortOrder.Custom
+ItemsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- Corrigido: Usando LayoutOrder
 ItemsListLayout.Parent = ItemsScrollingFrame
 
 local MoverFrame = Instance.new("Frame")
@@ -79,6 +79,7 @@ TabsScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
 local TabsListLayout = Instance.new("UIListLayout")
 TabsListLayout.Name = "UIListLayout"
 TabsListLayout.Padding = UDim.new(0.003, 2)
+TabsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabsListLayout.Parent = TabsScrollingFrame
 
 local HeaderFrame = Instance.new("Frame")
@@ -124,7 +125,7 @@ HeaderFrame.Parent = MainFrame
 -- Adicionando bordas arredondadas e traços
 local function addDecorations(instance: GuiObject)
 	local corner = Instance.new("UICorner", instance)
-	corner.CornerRadius = UDim.new(0, 5) -- Padrão de 5 pixels
+	corner.CornerRadius = UDim.new(0, 5)
 	Instance.new("UIStroke", instance)
 end
 addDecorations(MainFrame)
@@ -166,6 +167,18 @@ end)
 MinimizeButton.MouseButton1Click:Connect(function()
 	MainFrame.Visible = not MainFrame.Visible
 end)
+
+-- Objeto wrapper para permitir a sintaxe :SetParent()
+local ElementWrapper = {}
+ElementWrapper.__index = ElementWrapper
+function ElementWrapper.new(instance: Instance)
+	local self = setmetatable({Instance = instance}, ElementWrapper)
+	return self
+end
+function ElementWrapper:SetParent(parent: Instance)
+	self.Instance.Parent = parent
+	return self
+end
 
 -- =========================================================================
 -- TEMPLATES AUTOCONTIDOS (Criados no próprio script)
@@ -330,6 +343,13 @@ LabelText.TextSize = 14
 LabelText.TextColor3 = Color3.fromRGB(255, 255, 255)
 LabelText.Parent = LabelTemplate
 
+-- Contador para o LayoutOrder
+local layoutOrderCounter = 0
+local function getNextLayoutOrder(): number
+	layoutOrderCounter += 1
+	return layoutOrderCounter
+end
+
 -- =========================================================================
 -- FUNÇÕES PÚBLICAS DA UI LIBRARY
 -- =========================================================================
@@ -343,7 +363,7 @@ function PirokaHub.AddPage(name: string): Frame
 	pageFrame.Size = UDim2.new(1, 0, 1, 0)
 	pageFrame.Position = UDim2.new(0, 0, 0, 0)
 	pageFrame.BackgroundTransparency = 1
-	pageFrame.Visible = false -- Fica escondido por padrão
+	pageFrame.Visible = false
 	pageFrame.Parent = ItemsScrollingFrame
 
 	local pageLayout = Instance.new("UIListLayout")
@@ -351,7 +371,7 @@ function PirokaHub.AddPage(name: string): Frame
 	pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	pageLayout.Padding = UDim.new(0.01, 5)
 	pageLayout.FillDirection = Enum.FillDirection.Vertical
-	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder -- Corrigido: Usando LayoutOrder
 	pageLayout.Parent = pageFrame
 
 	return pageFrame
@@ -390,35 +410,37 @@ end
 
 --- Cria um elemento de categoria.
 -- @param text string O texto da categoria.
--- @return Frame O frame da categoria.
-function PirokaHub.AddCategory(text: string): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddCategory(text: string)
 	local categoryFrame = CategoryTemplate:Clone()
 	local textLabel = categoryFrame:FindFirstChild("Label")
 	if textLabel then
 		textLabel.Text = text
 	end
-	return categoryFrame
+	categoryFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(categoryFrame)
 end
 
 --- Cria um elemento de botão.
 -- @param text string O texto do botão.
 -- @param callback function A função a ser chamada ao clicar.
--- @return TextButton O botão criado.
-function PirokaHub.AddButton(text: string, callback: () -> ()): TextButton
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddButton(text: string, callback: () -> ())
 	local button = ButtonTemplate:Clone()
 	button.Text = text
 	if callback then
 		button.MouseButton1Click:Connect(callback)
 	end
-	return button
+	button.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(button)
 end
 
 --- Cria um elemento de toggle.
 -- @param text string O texto do toggle.
 -- @param initialState boolean O estado inicial (true para ON, false para OFF).
 -- @param callback function A função a ser chamada na mudança de estado. (newState: boolean)
--- @return Frame O frame do toggle.
-function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boolean) -> ()): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boolean) -> ())
 	local toggleFrame = ToggleTemplate:Clone()
 	local textButton = toggleFrame:FindFirstChild("TextButton")
 	local indicatorFrame = toggleFrame:FindFirstChild("Frame")
@@ -447,8 +469,8 @@ function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boo
 	end)
 
 	updateToggleVisuals() -- Define o estado visual inicial
-
-	return toggleFrame
+	toggleFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(toggleFrame)
 end
 
 --- Cria um elemento de slider.
@@ -457,8 +479,8 @@ end
 -- @param minValue number O valor mínimo.
 -- @param maxValue number O valor máximo.
 -- @param callback function A função a ser chamada quando o valor muda. (newValue: number)
--- @return Frame O frame do slider.
-function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: number, maxValue: number, callback: (number) -> ()): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: number, maxValue: number, callback: (number) -> ())
 	local sliderFrame = SliderTemplate:Clone()
 	local sliderLabel = sliderFrame:FindFirstChild("TextLabel")
 	local valueTextBox = sliderFrame:FindFirstChild("Valor")
@@ -473,9 +495,9 @@ function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: 
 
 	local function updateSliderVisuals(value: number)
 		local percentage = (value - minValue) / (maxValue - minValue)
-		local ballXOffset = percentage * (line.AbsoluteSize.X - ball.AbsoluteSize.X) + line.AbsolutePosition.X
+		local ballXPos = line.AbsolutePosition.X + (percentage * line.AbsoluteSize.X)
 		
-		ball.Position = UDim2.new(0, math.clamp(ballXOffset, line.AbsolutePosition.X, line.AbsolutePosition.X + line.AbsoluteSize.X - ball.AbsoluteSize.X) - sliderFrame.AbsolutePosition.X, ball.Position.Y.Scale, 0)
+		ball.Position = UDim2.new(0, math.clamp(ballXPos - sliderFrame.AbsolutePosition.X - (ball.AbsoluteSize.X / 2), 0, line.AbsoluteSize.X - ball.AbsoluteSize.X), ball.Position.Y.Scale, 0)
 		lineFill.Size = UDim2.new(percentage, 0, 1, 0)
 		
 		if valueTextBox then
@@ -483,7 +505,6 @@ function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: 
 		end
 	end
 
-	-- Adiciona o evento de arrastar
 	local draggingSlider = false
 	ball.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -514,21 +535,16 @@ function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: 
 		end
 	end)
 	
-	-- Garante que o slider é atualizado quando o layout é finalizado
-	RunService.Heartbeat:Wait()
-	task.spawn(function()
-		updateSliderVisuals(currentSliderValue)
-	end)
-
-	return sliderFrame
+	sliderFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(sliderFrame)
 end
 
 --- Cria um elemento de caixa de texto.
 -- @param labelText string O texto do placeholder.
 -- @param initialText string O texto inicial.
 -- @param callback function A função a ser chamada quando o texto é alterado. (newText: string)
--- @return Frame O frame da caixa de texto.
-function PirokaHub.AddTextbox(labelText: string, initialText: string, callback: (string) -> ()): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddTextbox(labelText: string, initialText: string, callback: (string) -> ())
 	local textboxFrame = TextboxTemplate:Clone()
 	local textbox = textboxFrame:FindFirstChild("Valor")
 	if textbox then
@@ -540,27 +556,29 @@ function PirokaHub.AddTextbox(labelText: string, initialText: string, callback: 
 			end
 		end)
 	end
-	return textboxFrame
+	textboxFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(textboxFrame)
 end
 
 --- Cria um elemento de label.
 -- @param text string O texto do label.
--- @return Frame O frame do label.
-function PirokaHub.AddLabel(text: string): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddLabel(text: string)
 	local labelFrame = LabelTemplate:Clone()
 	local textLabel = labelFrame:FindFirstChild("TextLabel")
 	if textLabel then
 		textLabel.Text = text
 	end
-	return labelFrame
+	labelFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(labelFrame)
 end
 
 --- Cria um elemento de link.
 -- @param linkText string O texto a ser exibido.
 -- @param url string A URL.
 -- @param imageId number? O ID da imagem do asset (opcional).
--- @return Frame O frame do link.
-function PirokaHub.AddLink(linkText: string, url: string, imageId: number?): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddLink(linkText: string, url: string, imageId: number?)
 	local linkFrame = ButtonTemplate:Clone()
 	linkFrame.Name = "Link"
 	linkFrame.Size = UDim2.new(0.9, 0, 0.05, 0)
@@ -601,19 +619,21 @@ function PirokaHub.AddLink(linkText: string, url: string, imageId: number?): Fra
 		ProximityPromptService:PromptForSafety("Would you like to visit this link?", url, Enum.PromptGameMode.StayInGame)
 	end)
 	
-	return linkFrame
+	linkFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(linkFrame)
 end
 
 --- Cria um elemento de linha divisória.
--- @return Frame O frame da linha.
-function PirokaHub.AddLine(): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddLine()
 	local lineFrame = Instance.new("Frame")
 	lineFrame.Name = "Linha"
 	lineFrame.Size = UDim2.new(0.9, 0, 0.005, 0)
 	lineFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	lineFrame.BackgroundTransparency = 0.5
 	addDecorations(lineFrame)
-	return lineFrame
+	lineFrame.LayoutOrder = getNextLayoutOrder()
+	return ElementWrapper.new(lineFrame)
 end
 
 --- Cria um elemento de dropdown.
@@ -621,8 +641,8 @@ end
 -- @param options table<string> A lista de opções.
 -- @param multiSelect boolean Se verdadeiro, permite múltiplas seleções.
 -- @param callback function A função a ser chamada quando a seleção muda. (selectedItems: table<string>)
--- @return Frame O frame do dropdown.
-function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect: boolean, callback: ({string}) -> ()): Frame
+-- @return ElementWrapper O objeto wrapper.
+function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect: boolean, callback: ({string}) -> ())
     local dropdownFrame = ButtonTemplate:Clone()
     dropdownFrame.Name = "Dropdown"
     
@@ -711,23 +731,23 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
     mainButton.MouseButton1Click:Connect(function()
         optionsFrame.Visible = not optionsFrame.Visible
         if optionsFrame.Visible then
-            local totalHeight = (#itemButtons * (itemButtons[1].AbsoluteSize.Y + optionsLayout.Padding.Offset))
+            local totalHeight = 0
+            for _, itemButton in ipairs(itemButtons) do
+                totalHeight = totalHeight + itemButton.AbsoluteSize.Y + optionsLayout.Padding.Offset
+            end
             optionsFrame.Size = UDim2.new(1, 0, 0, math.min(totalHeight, ItemsScrollingFrame.AbsoluteSize.Y * 0.8))
             optionsFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
         end
     end)
     
-    return dropdownFrame
+    dropdownFrame.LayoutOrder = getNextLayoutOrder()
+    return ElementWrapper.new(dropdownFrame)
 end
-
 
 --- Inicializa a UI, parentando-a na PlayerGui e posicionando-a.
 function PirokaHub.Init()
 	-- Parenta a ScreenGui para que o layout seja calculado
 	ScreenGui.Parent = PlayerGui
-	-- Reposiciona a MainFrame para o centro da tela
-	MainFrame.Position = UDim2.fromScale(0.5, 0.5)
-	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 	-- Define a página inicial como visível
 	local initialPage = ItemsScrollingFrame:FindFirstChildOfClass("Frame")
 	if initialPage then
