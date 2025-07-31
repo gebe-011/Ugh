@@ -1,760 +1,621 @@
---!strict
---[[
-	Piroka Hub UI Library
-	Desenvolvida por AI com base no design de GUI de Gabriel55477uui.
-	Esta versão é totalmente autocontida e corrige todos os erros de 'SetParent' e 'SortOrder'.
-]]
+--[=[
+    PirokaHub UI Library
+    Convertido por Gemini
+]=]
 
 local PirokaHub = {}
-PirokaHub.__index = PirokaHub
+local Elements = {}
 
--- Serviços
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local ProximityPromptService = game:GetService("ProximityPromptService")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-
--- Instâncias da GUI Principal
+-- Main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PirokaHub_ScreenGui"
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Name = "PirokaHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "Piroka Hub"
-MainFrame.Size = UDim2.new(0.36274, 0, 0.50592, 0)
-MainFrame.Position = UDim2.fromScale(0.5, 0.5) -- Posição inicial no centro
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BorderSizePixel = 0
-MainFrame.BackgroundColor3 = Color3.fromRGB(103, 52, 4)
-MainFrame.BackgroundTransparency = 0.5
-MainFrame.Visible = true
+-- Main GUI Frame
+local PirokaHubFrame = Instance.new("Frame")
+PirokaHubFrame.Name = "Piroka Hub"
+PirokaHubFrame.Size = UDim2.new(0.36274, 0, 0.50592, 0)
+PirokaHubFrame.Position = UDim2.new(0.32326, 0, 0.10841, 0)
+PirokaHubFrame.BackgroundColor3 = Color3.fromRGB(103, 52, 4)
+PirokaHubFrame.BackgroundTransparency = 0.5
+PirokaHubFrame.BorderSizePixel = 0
+PirokaHubFrame.Parent = ScreenGui
 
-local ItemsScrollingFrame = Instance.new("ScrollingFrame")
-ItemsScrollingFrame.Name = "Itens"
-ItemsScrollingFrame.Size = UDim2.new(0.9932, 0, 0.9881, 0)
-ItemsScrollingFrame.Position = UDim2.new(0, 0, 0.0119, 0)
-ItemsScrollingFrame.BorderSizePixel = 0
-ItemsScrollingFrame.BackgroundColor3 = Color3.fromRGB(255, 44, 173)
-ItemsScrollingFrame.BackgroundTransparency = 1
-ItemsScrollingFrame.ScrollBarThickness = 0
-ItemsScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-ItemsScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-
-local ItemsListLayout = Instance.new("UIListLayout")
-ItemsListLayout.Name = "UIListLayout"
-ItemsListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-ItemsListLayout.Padding = UDim.new(0.01, 2)
-ItemsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- CORRIGIDO: Usando LayoutOrder
-ItemsListLayout.Parent = ItemsScrollingFrame
-
-local MoverFrame = Instance.new("Frame")
-MoverFrame.Name = "Mover"
-MoverFrame.Size = UDim2.new(1, 0, 0.14286, 0)
-MoverFrame.Position = UDim2.new(0, 0, -0.14286, 0)
-MoverFrame.BorderSizePixel = 0
-MoverFrame.BackgroundColor3 = Color3.fromRGB(103, 52, 4)
-MoverFrame.BackgroundTransparency = 0.2
-
-local MoverTextLabel = Instance.new("TextLabel")
-MoverTextLabel.Name = "TextLabel"
-MoverTextLabel.Size = UDim2.new(1, 0, 0.91667, 0)
-MoverTextLabel.Text = "Mover"
-MoverTextLabel.BorderSizePixel = 0
-MoverTextLabel.TextStrokeTransparency = 0
-MoverTextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MoverTextLabel.BackgroundTransparency = 1
-MoverTextLabel.Parent = MoverFrame
-
-local TabsScrollingFrame = Instance.new("ScrollingFrame")
-TabsScrollingFrame.Name = "Tabs"
-TabsScrollingFrame.Size = UDim2.new(0.47619, 0, 1, 0)
-TabsScrollingFrame.Position = UDim2.new(-0.47619, 0, 0, 0)
-TabsScrollingFrame.BorderSizePixel = 0
-TabsScrollingFrame.BackgroundColor3 = Color3.fromRGB(255, 44, 173)
-TabsScrollingFrame.BackgroundTransparency = 0.5
-TabsScrollingFrame.ScrollBarThickness = 0
-TabsScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-
-local TabsListLayout = Instance.new("UIListLayout")
-TabsListLayout.Name = "UIListLayout"
-TabsListLayout.Padding = UDim.new(0.003, 2)
-TabsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- CORRIGIDO: Usando LayoutOrder
-TabsListLayout.Parent = TabsScrollingFrame
-
-local HeaderFrame = Instance.new("Frame")
-HeaderFrame.Name = "Header"
-HeaderFrame.Size = UDim2.new(0.59864, 0, 0.88095, 0)
-HeaderFrame.Position = UDim2.new(1, 0, -0.32143, 0)
-HeaderFrame.BorderSizePixel = 0
-HeaderFrame.BackgroundColor3 = Color3.fromRGB(103, 52, 4)
-HeaderFrame.BackgroundTransparency = 0.5
-
-local HeaderTextLabel = Instance.new("TextLabel")
-HeaderTextLabel.Name = "TextLabel"
-HeaderTextLabel.Size = UDim2.new(1, 0, 0.12162, 0)
-HeaderTextLabel.Text = "Piroka Hub"
-HeaderTextLabel.TextSize = 12
-HeaderTextLabel.BorderSizePixel = 0
-HeaderTextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-HeaderTextLabel.BackgroundTransparency = 1
-HeaderTextLabel.Parent = HeaderFrame
-
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Size = UDim2.new(0.18182, 0, 0.16216, 0)
-MinimizeButton.Position = UDim2.new(0.80682, 0, -0.05405, 0)
-MinimizeButton.Text = "-"
-MinimizeButton.TextSize = 60
-MinimizeButton.TextStrokeTransparency = 0
-MinimizeButton.BorderSizePixel = 2
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeButton.BackgroundTransparency = 1
-MinimizeButton.Parent = HeaderFrame
-
-local AspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
-AspectRatioConstraint.AspectRatio = 1.75
-AspectRatioConstraint.Parent = MainFrame
-
--- Corrigindo a hierarquia e parentesco
-ItemsScrollingFrame.Parent = MainFrame
-MoverFrame.Parent = MainFrame
-TabsScrollingFrame.Parent = MainFrame
-HeaderFrame.Parent = MainFrame
-
--- Adicionando bordas arredondadas e traços
-local function addDecorations(instance: GuiObject)
-	local corner = Instance.new("UICorner", instance)
-	corner.CornerRadius = UDim.new(0, 5)
-	Instance.new("UIStroke", instance)
-end
-addDecorations(MainFrame)
-addDecorations(ItemsScrollingFrame)
-addDecorations(MoverFrame)
-addDecorations(TabsScrollingFrame)
-addDecorations(HeaderFrame)
-addDecorations(HeaderTextLabel)
-addDecorations(MinimizeButton)
-
--- Adicionando funcionalidade de arrastar (Draggable)
+-- Draggable functionality
 local dragging
-local dragInput
-local dragStart
-local startPosition
-MoverFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragInput = input
-		dragStart = input.Position
-		startPosition = MainFrame.Position
-		input.Handled = true
-	end
-end)
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - dragStart
-		MainFrame.Position = UDim2.new(startPosition.X.Scale, startPosition.X.Offset + delta.X, startPosition.Y.Scale, startPosition.Y.Offset + delta.Y)
-	end
-end)
-UserInputService.InputEnded:Connect(function(input)
-	if input == dragInput then
-		dragging = false
-		dragInput = nil
-	end
+local dragOffset
+local mover = Instance.new("TextButton")
+mover.Text = "Piroka Hub"
+mover.Size = UDim2.new(1, 0, 0.08, 0)
+mover.Position = UDim2.new(0, 0, 0, 0)
+mover.BackgroundColor3 = PirokaHubFrame.BackgroundColor3
+mover.BackgroundTransparency = 0.2
+mover.Font = Enum.Font.SourceSans
+mover.TextSize = 16
+mover.TextColor3 = Color3.new(1,1,1)
+mover.Parent = PirokaHubFrame
+
+mover.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragOffset = input.Position - PirokaHubFrame.AbsolutePosition
+        mover.CaptureFocus = true
+    end
 end)
 
--- Adicionando funcionalidade de minimizar
-MinimizeButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = not MainFrame.Visible
+mover.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+        mover.CaptureFocus = false
+    end
 end)
 
--- Objeto wrapper para permitir a sintaxe :SetParent()
-local ElementWrapper = {}
-ElementWrapper.__index = ElementWrapper
-function ElementWrapper.new(instance: Instance)
-	local self = setmetatable({Instance = instance}, ElementWrapper)
-	return self
-end
-function ElementWrapper:SetParent(parent: Instance)
-	self.Instance.Parent = parent
-	return self
-end
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        PirokaHubFrame.Position = UDim2.new(0, input.Position.X - dragOffset.X, 0, input.Position.Y - dragOffset.Y)
+    end
+end)
 
--- =========================================================================
--- TEMPLATES AUTOCONTIDOS (Criados no próprio script)
--- =========================================================================
+-- Tab ScrollingFrame
+local TabsContainer = Instance.new("ScrollingFrame")
+TabsContainer.Name = "Tabs"
+TabsContainer.Size = UDim2.new(0.47619, 0, 1, 0)
+TabsContainer.Position = UDim2.new(0, 0, 0.08, 0)
+TabsContainer.BackgroundColor3 = PirokaHubFrame.BackgroundColor3
+TabsContainer.BackgroundTransparency = 0.5
+TabsContainer.BorderSizePixel = 0
+TabsContainer.ScrollBarThickness = 0
+TabsContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+TabsContainer.Parent = PirokaHubFrame
 
--- Template da Categoria
-local CategoryTemplate = Instance.new("Frame")
-CategoryTemplate.Name = "Category"
-CategoryTemplate.Size = UDim2.new(0.9, 0, 0.05, 0)
-CategoryTemplate.BorderSizePixel = 0
-CategoryTemplate.BackgroundColor3 = Color3.fromRGB(150, 80, 20)
-CategoryTemplate.BackgroundTransparency = 0.5
-local CategoryLabel = Instance.new("TextLabel")
-CategoryLabel.Name = "Label"
-CategoryLabel.Size = UDim2.new(1, 0, 1, 0)
-CategoryLabel.BorderSizePixel = 0
-CategoryLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-CategoryLabel.BackgroundTransparency = 1
-CategoryLabel.Text = "Category"
-CategoryLabel.Font = Enum.Font.SourceSans
-CategoryLabel.TextSize = 14
-CategoryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-CategoryLabel.Parent = CategoryTemplate
-addDecorations(CategoryTemplate)
+local tabsLayout = Instance.new("UIListLayout")
+tabsLayout.Name = "UIListLayout"
+tabsLayout.Padding = UDim.new(0, 5)
+tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabsLayout.Parent = TabsContainer
 
--- Template do Botão
-local ButtonTemplate = Instance.new("TextButton")
-ButtonTemplate.Name = "Button"
-ButtonTemplate.Size = UDim2.new(0.9, 0, 0.05, 0)
-ButtonTemplate.BorderSizePixel = 0
-ButtonTemplate.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ButtonTemplate.BackgroundTransparency = 0.8
-ButtonTemplate.Text = "Button"
-ButtonTemplate.Font = Enum.Font.SourceSans
-ButtonTemplate.TextSize = 14
-ButtonTemplate.TextColor3 = Color3.fromRGB(255, 255, 255)
-addDecorations(ButtonTemplate)
+-- Elements ScrollingFrame
+local ElementsContainer = Instance.new("ScrollingFrame")
+ElementsContainer.Name = "Elements"
+ElementsContainer.Size = UDim2.new(0.52381, 0, 1, 0)
+ElementsContainer.Position = UDim2.new(0.47619, 0, 0.08, 0)
+ElementsContainer.BackgroundColor3 = PirokaHubFrame.BackgroundColor3
+ElementsContainer.BackgroundTransparency = 1
+ElementsContainer.BorderSizePixel = 0
+ElementsContainer.ScrollBarThickness = 0
+ElementsContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+ElementsContainer.Parent = PirokaHubFrame
 
--- Template do Toggle
-local ToggleTemplate = Instance.new("Frame")
-ToggleTemplate.Name = "Toggle"
-ToggleTemplate.Size = UDim2.new(0.9, 0, 0.05, 0)
-ToggleTemplate.BorderSizePixel = 0
-ToggleTemplate.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleTemplate.BackgroundTransparency = 0.8
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "TextButton"
-ToggleButton.Size = UDim2.new(1, 0, 1, 0)
-ToggleButton.BorderSizePixel = 0
-ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.BackgroundTransparency = 1
-ToggleButton.Text = "Toggle"
-ToggleButton.Font = Enum.Font.SourceSans
-ToggleButton.TextSize = 14
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Parent = ToggleTemplate
-local IndicatorFrame = Instance.new("Frame")
-IndicatorFrame.Name = "Frame"
-IndicatorFrame.Size = UDim2.new(0, 15, 0.8, 0)
-IndicatorFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
-IndicatorFrame.BorderSizePixel = 0
-IndicatorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-IndicatorFrame.Parent = ToggleTemplate
-addDecorations(ToggleTemplate)
-addDecorations(IndicatorFrame)
+local elementsLayout = Instance.new("UIListLayout")
+elementsLayout.Name = "UIListLayout"
+elementsLayout.Padding = UDim.new(0, 5)
+elementsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+elementsLayout.Parent = ElementsContainer
 
--- Template do Slider
-local SliderTemplate = Instance.new("Frame")
-SliderTemplate.Name = "Slider"
-SliderTemplate.Size = UDim2.new(0.9, 0, 0.05, 0)
-SliderTemplate.BorderSizePixel = 0
-SliderTemplate.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-SliderTemplate.BackgroundTransparency = 0.8
-local SliderLabel = Instance.new("TextLabel")
-SliderLabel.Name = "TextLabel"
-SliderLabel.Size = UDim2.new(0.7, 0, 1, 0)
-SliderLabel.Position = UDim2.new(0, 0, 0, 0)
-SliderLabel.BorderSizePixel = 0
-SliderLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SliderLabel.BackgroundTransparency = 1
-SliderLabel.Text = "Slider"
-SliderLabel.Font = Enum.Font.SourceSans
-SliderLabel.TextSize = 14
-SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-SliderLabel.Parent = SliderTemplate
-local SliderValue = Instance.new("TextBox")
-SliderValue.Name = "Valor"
-SliderValue.Size = UDim2.new(0.3, 0, 1, 0)
-SliderValue.Position = UDim2.new(0.7, 0, 0, 0)
-SliderValue.Text = "0"
-SliderValue.BorderSizePixel = 0
-SliderValue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SliderValue.BackgroundTransparency = 1
-SliderValue.TextSize = 14
-SliderValue.Font = Enum.Font.SourceSans
-SliderValue.TextColor3 = Color3.fromRGB(255, 255, 255)
-SliderValue.TextXAlignment = Enum.TextXAlignment.Right
-SliderValue.Parent = SliderTemplate
-local SliderLine = Instance.new("Frame")
-SliderLine.Name = "Linha"
-SliderLine.Size = UDim2.new(0.9, 0, 0.005, 0)
-SliderLine.Position = UDim2.new(0.05, 0, 0.6, 0)
-SliderLine.BorderSizePixel = 0
-SliderLine.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-SliderLine.Parent = SliderTemplate
-local SliderLine2 = Instance.new("Frame")
-SliderLine2.Name = "Linha2"
-SliderLine2.Size = UDim2.new(0, 0, 1, 0)
-SliderLine2.Position = UDim2.new(0, 0, 0, 0)
-SliderLine2.BorderSizePixel = 0
-SliderLine2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SliderLine2.Parent = SliderLine
-local SliderBall = Instance.new("Frame")
-SliderBall.Name = "Bola"
-SliderBall.Size = UDim2.new(0.08, 0, 0.08, 0)
-SliderBall.Position = UDim2.new(0, 0, 0.4, 0)
-SliderBall.BorderSizePixel = 0
-SliderBall.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SliderBall.Parent = SliderTemplate
-addDecorations(SliderTemplate)
-addDecorations(SliderBall)
-addDecorations(SliderLine)
-addDecorations(SliderLine2)
+local pages = {}
 
--- Template do Textbox
-local TextboxTemplate = Instance.new("Frame")
-TextboxTemplate.Name = "Textbox"
-TextboxTemplate.Size = UDim2.new(0.9, 0, 0.05, 0)
-TextboxTemplate.BorderSizePixel = 0
-TextboxTemplate.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-TextboxTemplate.BackgroundTransparency = 0.8
-local TextboxField = Instance.new("TextBox")
-TextboxField.Name = "Valor"
-TextboxField.Size = UDim2.new(1, 0, 1, 0)
-TextboxField.BorderSizePixel = 0
-TextboxField.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextboxField.BackgroundTransparency = 1
-TextboxField.Text = "Textbox"
-TextboxField.Font = Enum.Font.SourceSans
-TextboxField.TextSize = 14
-TextboxField.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextboxField.PlaceholderText = ""
-TextboxField.Parent = TextboxTemplate
-addDecorations(TextboxTemplate)
+function PirokaHub:AddPage(name)
+    local pageFrame = Instance.new("Frame")
+    pageFrame.Name = name
+    pageFrame.Size = UDim2.new(1, 0, 0, 0)
+    pageFrame.AutomaticSize = Enum.AutomaticSize.Y
+    pageFrame.BackgroundTransparency = 1
+    pageFrame.Visible = false
+    pageFrame.Parent = ElementsContainer
 
--- Template do Label (reusando o CategoryTemplate)
-local LabelTemplate = CategoryTemplate:Clone()
-LabelTemplate.Name = "Label"
-LabelTemplate.BackgroundTransparency = 0.8
-LabelTemplate.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-LabelTemplate:FindFirstChild("Label"):Destroy()
-local LabelText = Instance.new("TextLabel")
-LabelText.Name = "TextLabel"
-LabelText.Size = UDim2.new(1, 0, 1, 0)
-LabelText.BorderSizePixel = 0
-LabelText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-LabelText.BackgroundTransparency = 1
-LabelText.Text = "Label"
-LabelText.Font = Enum.Font.SourceSans
-LabelText.TextSize = 14
-LabelText.TextColor3 = Color3.fromRGB(255, 255, 255)
-LabelText.Parent = LabelTemplate
+    local pageLayout = Instance.new("UIListLayout")
+    pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    pageLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+    pageLayout.Padding = UDim.new(0, 5)
+    pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    pageLayout.Parent = pageFrame
 
--- Contador para o LayoutOrder
-local layoutOrderCounter = 0
-local function getNextLayoutOrder(): number
-	layoutOrderCounter += 1
-	return layoutOrderCounter
+    pages[name] = pageFrame
+    return pageFrame
 end
 
--- =========================================================================
--- FUNÇÕES PÚBLICAS DA UI LIBRARY
--- =========================================================================
+function PirokaHub:AddTab(name, page)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = "Tab_" .. name
+    tabButton.Size = UDim2.new(1, 0, 0, 30)
+    tabButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    tabButton.BackgroundTransparency = 0.7
+    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabButton.Text = name
+    tabButton.Parent = TabsContainer
 
---- Cria um novo frame de página para conter os elementos da UI.
--- @param name string O nome da página.
--- @return Frame O frame da página criado.
-function PirokaHub.AddPage(name: string): Frame
-	local pageFrame = Instance.new("Frame")
-	pageFrame.Name = name
-	pageFrame.Size = UDim2.new(1, 0, 1, 0)
-	pageFrame.Position = UDim2.new(0, 0, 0, 0)
-	pageFrame.BackgroundTransparency = 1
-	pageFrame.Visible = false
-	pageFrame.Parent = ItemsScrollingFrame
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.Parent = tabButton
 
-	local pageLayout = Instance.new("UIListLayout")
-	pageLayout.Name = "PageLayout"
-	pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	pageLayout.Padding = UDim.new(0.01, 5)
-	pageLayout.FillDirection = Enum.FillDirection.Vertical
-	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	pageLayout.Parent = pageFrame
-
-	return pageFrame
-end
-
---- Cria um botão de aba para alternar entre as páginas.
--- @param text string O texto a ser exibido na aba.
--- @param targetPage Frame A página que a aba irá exibir.
--- @return TextButton O botão da aba criado.
-function PirokaHub.AddTab(text: string, targetPage: Frame): TextButton
-	local tabButton = Instance.new("TextButton")
-	tabButton.Name = text
-	tabButton.Size = UDim2.new(0.9, 0, 0.08, 0)
-	tabButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	tabButton.BackgroundTransparency = 0.8
-	tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	tabButton.Text = text
-	tabButton.Font = Enum.Font.SourceSans
-	tabButton.TextSize = 14
-	tabButton.Parent = TabsScrollingFrame
-	addDecorations(tabButton)
-
-	tabButton.MouseButton1Click:Connect(function()
-		for _, page in ipairs(ItemsScrollingFrame:GetChildren()) do
-			if page:IsA("Frame") and page.Name ~= "UIListLayout" then
-				page.Visible = false
-			end
-		end
-		targetPage.Visible = true
-	end)
-
-	return tabButton
-end
-
---- Cria um elemento de categoria.
--- @param text string O texto da categoria.
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddCategory(text: string)
-	local categoryFrame = CategoryTemplate:Clone()
-	local textLabel = categoryFrame:FindFirstChild("Label")
-	if textLabel then
-		textLabel.Text = text
-	end
-	categoryFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(categoryFrame)
-end
-
---- Cria um elemento de botão.
--- @param text string O texto do botão.
--- @param callback function A função a ser chamada ao clicar.
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddButton(text: string, callback: () -> ())
-	local button = ButtonTemplate:Clone()
-	button.Text = text
-	if callback then
-		button.MouseButton1Click:Connect(callback)
-	end
-	button.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(button)
-end
-
---- Cria um elemento de toggle.
--- @param text string O texto do toggle.
--- @param initialState boolean O estado inicial (true para ON, false para OFF).
--- @param callback function A função a ser chamada na mudança de estado. (newState: boolean)
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boolean) -> ())
-	local toggleFrame = ToggleTemplate:Clone()
-	local textButton = toggleFrame:FindFirstChild("TextButton")
-	local indicatorFrame = toggleFrame:FindFirstChild("Frame")
-	if textButton then
-		textButton.Text = text
-	end
-
-	local currentState = initialState
-
-	local function updateToggleVisuals()
-		if currentState then
-			indicatorFrame.BackgroundColor3 = Color3.fromRGB(54, 255, 15)
-			indicatorFrame.Position = UDim2.new(0.875, 0, 0.1, 0)
-		else
-			indicatorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-			indicatorFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
-		end
-	end
-
-	textButton.MouseButton1Click:Connect(function()
-		currentState = not currentState
-		updateToggleVisuals()
-		if callback then
-			callback(currentState)
-		end
-	end)
-
-	updateToggleVisuals()
-	toggleFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(toggleFrame)
-end
-
---- Cria um elemento de slider.
--- @param labelText string O texto do slider.
--- @param initialValue number O valor inicial.
--- @param minValue number O valor mínimo.
--- @param maxValue number O valor máximo.
--- @param callback function A função a ser chamada quando o valor muda. (newValue: number)
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: number, maxValue: number, callback: (number) -> ())
-	local sliderFrame = SliderTemplate:Clone()
-	local sliderLabel = sliderFrame:FindFirstChild("TextLabel")
-	local valueTextBox = sliderFrame:FindFirstChild("Valor")
-	local ball = sliderFrame:FindFirstChild("Bola")
-	local line = sliderFrame:FindFirstChild("Linha")
-	local lineFill = line:FindFirstChild("Linha2")
-	if sliderLabel then
-		sliderLabel.Text = labelText
-	end
-
-	local currentSliderValue = math.clamp(initialValue, minValue, maxValue)
-
-	local function updateSliderVisuals(value: number)
-		local percentage = (value - minValue) / (maxValue - minValue)
-		local lineFillWidth = line.AbsoluteSize.X * percentage
-		local ballPos = line.AbsolutePosition.X + lineFillWidth - (ball.AbsoluteSize.X / 2)
-		ball.Position = UDim2.new(0, math.clamp(ballPos - sliderFrame.AbsolutePosition.X, 0, line.AbsoluteSize.X - ball.AbsoluteSize.X), ball.Position.Y.Scale, 0)
-		lineFill.Size = UDim2.new(percentage, 0, 1, 0)
-		if valueTextBox then
-			valueTextBox.Text = tostring(math.floor(value + 0.5))
-		end
-	end
-
-	local draggingSlider = false
-	ball.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			draggingSlider = true
-			input.Handled = true
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input)
-		if draggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local mouseX = input.Position.X
-			local linhaStartX = line.AbsolutePosition.X
-			local linhaEndX = linhaStartX + line.AbsoluteSize.X
-			local clampedMouseX = math.clamp(mouseX, linhaStartX, linhaEndX)
-			local normalizedValue = (clampedMouseX - linhaStartX) / line.AbsoluteSize.X
-			
-			currentSliderValue = minValue + (normalizedValue * (maxValue - minValue))
-			updateSliderVisuals(currentSliderValue)
-			if callback then
-				callback(currentSliderValue)
-			end
-		end
-	end)
-	
-	UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			draggingSlider = false
-		end
-	end)
-	
-	sliderFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(sliderFrame)
-end
-
---- Cria um elemento de caixa de texto.
--- @param labelText string O texto do placeholder.
--- @param initialText string O texto inicial.
--- @param callback function A função a ser chamada quando o texto é alterado. (newText: string)
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddTextbox(labelText: string, initialText: string, callback: (string) -> ())
-	local textboxFrame = TextboxTemplate:Clone()
-	local textbox = textboxFrame:FindFirstChild("Valor")
-	if textbox then
-		textbox.PlaceholderText = labelText
-		textbox.Text = initialText
-		textbox.FocusLost:Connect(function(enterPressed)
-			if enterPressed and callback then
-				callback(textbox.Text)
-			end
-		end)
-	end
-	textboxFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(textboxFrame)
-end
-
---- Cria um elemento de label.
--- @param text string O texto do label.
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddLabel(text: string)
-	local labelFrame = LabelTemplate:Clone()
-	local textLabel = labelFrame:FindFirstChild("TextLabel")
-	if textLabel then
-		textLabel.Text = text
-	end
-	labelFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(labelFrame)
-end
-
---- Cria um elemento de link.
--- @param linkText string O texto a ser exibido.
--- @param url string A URL.
--- @param imageId number? O ID da imagem do asset (opcional).
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddLink(linkText: string, url: string, imageId: number?)
-	local linkFrame = ButtonTemplate:Clone()
-	linkFrame.Name = "Link"
-	linkFrame.Size = UDim2.new(0.9, 0, 0.05, 0)
-	
-	local textLabel = Instance.new("TextLabel")
-	textLabel.Name = "LinkText"
-	textLabel.Text = linkText
-	textLabel.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel.Size = UDim2.new(0.7, 0, 1, 0)
-	textLabel.Position = UDim2.new(0.05, 0, 0, 0)
-	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	textLabel.BackgroundTransparency = 1
-	textLabel.Parent = linkFrame
-	
-	local copyButton = Instance.new("TextButton")
-	copyButton.Name = "CopyButton"
-	copyButton.Text = "Copy"
-	copyButton.BackgroundColor3 = Color3.fromRGB(15, 255, 54)
-	copyButton.Size = UDim2.new(0.1, 0, 0.8, 0)
-	copyButton.Position = UDim2.new(0.75, 0, 0.1, 0)
-	copyButton.Parent = linkFrame
-	addDecorations(copyButton)
-	
-	local redirectButton = Instance.new("TextButton")
-	redirectButton.Name = "RedirectButton"
-	redirectButton.Text = "Go"
-	redirectButton.BackgroundColor3 = Color3.fromRGB(170, 170, 170)
-	redirectButton.Size = UDim2.new(0.1, 0, 0.8, 0)
-	redirectButton.Position = UDim2.new(0.87, 0, 0.1, 0)
-	redirectButton.Parent = linkFrame
-	addDecorations(redirectButton)
-	
-	copyButton.MouseButton1Click:Connect(function()
-		warn("Copying to clipboard is generally not allowed in live games.")
-	end)
-	
-	redirectButton.MouseButton1Click:Connect(function()
-		ProximityPromptService:PromptForSafety("Would you like to visit this link?", url, Enum.PromptGameMode.StayInGame)
-	end)
-	
-	linkFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(linkFrame)
-end
-
---- Cria um elemento de linha divisória.
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddLine()
-	local lineFrame = Instance.new("Frame")
-	lineFrame.Name = "Linha"
-	lineFrame.Size = UDim2.new(0.9, 0, 0.005, 0)
-	lineFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	lineFrame.BackgroundTransparency = 0.5
-	addDecorations(lineFrame)
-	lineFrame.LayoutOrder = getNextLayoutOrder()
-	return ElementWrapper.new(lineFrame)
-end
-
---- Cria um elemento de dropdown.
--- @param labelText string O texto do dropdown.
--- @param options table<string> A lista de opções.
--- @param multiSelect boolean Se verdadeiro, permite múltiplas seleções.
--- @param callback function A função a ser chamada quando a seleção muda. (selectedItems: table<string>)
--- @return ElementWrapper O objeto wrapper.
-function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect: boolean, callback: ({string}) -> ())
-    local dropdownFrame = ButtonTemplate:Clone()
-    dropdownFrame.Name = "Dropdown"
-    
-    local mainButton = dropdownFrame
-    mainButton.Text = labelText
-    
-    local arrow = Instance.new("ImageLabel")
-    arrow.Name = "Arrow"
-    arrow.Image = "rbxassetid://6030999596"
-    arrow.BackgroundTransparency = 1
-    arrow.Size = UDim2.new(0.1, 0, 0.8, 0)
-    arrow.Position = UDim2.new(0.85, 0, 0.1, 0)
-    arrow.Parent = mainButton
-
-    local optionsFrame = Instance.new("ScrollingFrame")
-    optionsFrame.Name = "Options"
-    optionsFrame.Size = UDim2.new(1, 0, 0, 0)
-    optionsFrame.Position = UDim2.new(0, 0, 1, 0)
-    optionsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    optionsFrame.BackgroundTransparency = 0.9
-    optionsFrame.Visible = false
-    optionsFrame.ZIndex = 2
-    optionsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    optionsFrame.Parent = dropdownFrame
-    addDecorations(optionsFrame)
-
-    local optionsLayout = Instance.new("UIListLayout")
-    optionsLayout.Name = "OptionsLayout"
-    optionsLayout.FillDirection = Enum.FillDirection.Vertical
-    optionsLayout.Padding = UDim.new(0.01, 0)
-    optionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    optionsLayout.Parent = optionsFrame
-
-    local selectedItems: {string} = {}
-    local itemButtons: {TextButton} = {}
-
-    local function updateDropdownText()
-        if #selectedItems == 0 then
-            mainButton.Text = labelText
-        elseif #selectedItems == 1 then
-            mainButton.Text = selectedItems[1]
-        else
-            mainButton.Text = "(" .. #selectedItems .. ") items selected"
+    tabButton.MouseButton1Click:Connect(function()
+        for _, otherPage in pairs(pages) do
+            otherPage.Visible = false
         end
-    end
+        page.Visible = true
+    end)
+    
+    return tabButton
+end
 
-    local function createOptionButton(optionText: string, order: number)
-        local itemButton = Instance.new("TextButton")
-        itemButton.Name = "Item"
-        itemButton.Text = optionText
-        itemButton.Size = UDim2.new(1, 0, 0.15, 0)
-        itemButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        itemButton.BackgroundTransparency = 1
-        itemButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        itemButton.Font = Enum.Font.SourceSans
-        itemButton.TextSize = 12
-        itemButton.LayoutOrder = order
-        itemButton.Parent = optionsFrame
-        table.insert(itemButtons, itemButton)
+function PirokaHub:AddCategory(text)
+    local categoryFrame = Instance.new("Frame")
+    categoryFrame.Name = "Category"
+    categoryFrame.Size = UDim2.new(1, 0, 0, 25)
+    categoryFrame.BackgroundTransparency = 0.8
+    categoryFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 
-        itemButton.MouseButton1Click:Connect(function()
-            if multiSelect then
-                local index = table.find(selectedItems, optionText)
-                if index then
-                    table.remove(selectedItems, index)
-                    itemButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-                else
-                    table.insert(selectedItems, optionText)
-                    itemButton.TextColor3 = Color3.fromRGB(54, 255, 15)
-                end
-            else
-                selectedItems = {optionText}
-                for _, btn in ipairs(itemButtons) do
-                    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                end
-                itemButton.TextColor3 = Color3.fromRGB(54, 255, 15)
-                optionsFrame.Visible = false
-            end
-            updateDropdownText()
-            if callback then callback(selectedItems) end
+    local categoryLabel = Instance.new("TextLabel")
+    categoryLabel.Size = UDim2.new(1, 0, 1, 0)
+    categoryLabel.BackgroundTransparency = 1
+    categoryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    categoryLabel.Text = text
+    categoryLabel.TextSize = 14
+    categoryLabel.Parent = categoryFrame
+
+    return categoryFrame
+end
+
+function PirokaHub:AddLine()
+    local lineFrame = Instance.new("Frame")
+    lineFrame.Name = "Line"
+    lineFrame.Size = UDim2.new(1, 0, 0, 2)
+    lineFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    lineFrame.BackgroundTransparency = 0.8
+
+    return lineFrame
+end
+
+function PirokaHub:AddLabel(text)
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Size = UDim2.new(1, 0, 0, 20)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = text
+    label.TextSize = 12
+    label.Parent = elements.Label
+
+    return label
+end
+
+function PirokaHub:AddLink(text, image, redirectable, copyable)
+    local linkFrame = Instance.new("Frame")
+    linkFrame.Name = "Link"
+    linkFrame.Size = UDim2.new(1, 0, 0, 50)
+    linkFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    linkFrame.BackgroundTransparency = 0.8
+
+    local linkLabel = Instance.new("TextLabel")
+    linkLabel.Name = "LinkText"
+    linkLabel.Size = UDim2.new(0.75, 0, 0.5, 0)
+    linkLabel.Position = UDim2.new(0.01, 0, 0.1, 0)
+    linkLabel.BackgroundTransparency = 1
+    linkLabel.TextColor3 = Color3.fromRGB(29, 147, 255)
+    linkLabel.Text = text
+    linkLabel.TextSize = 10
+    linkLabel.TextXAlignment = Enum.TextXAlignment.Left
+    linkLabel.Parent = linkFrame
+
+    local imageLabel = Instance.new("ImageLabel")
+    imageLabel.Size = UDim2.new(0.18, 0, 0.6, 0)
+    imageLabel.Position = UDim2.new(0.77, 0, 0.1, 0)
+    imageLabel.Image = image
+    imageLabel.BackgroundTransparency = 1
+    imageLabel.Parent = linkFrame
+
+    local copyButton = Instance.new("TextButton")
+    copyButton.Size = UDim2.new(0.45, 0, 0.3, 0)
+    copyButton.Position = UDim2.new(0.01, 0, 0.65, 0)
+    copyButton.BackgroundColor3 = Color3.fromRGB(92, 255, 67)
+    copyButton.BackgroundTransparency = 0.5
+    copyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    copyButton.Text = "Copiar"
+    copyButton.Parent = linkFrame
+
+    local redirectButton = Instance.new("TextButton")
+    redirectButton.Size = UDim2.new(0.5, 0, 0.3, 0)
+    redirectButton.Position = UDim2.new(0.49, 0, 0.65, 0)
+    redirectButton.BackgroundColor3 = Color3.fromRGB(109, 109, 109)
+    redirectButton.BackgroundTransparency = 0.5
+    redirectButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    redirectButton.Text = "Redirecionar"
+    redirectButton.Parent = linkFrame
+
+    if copyable then
+        copyButton.MouseButton1Click:Connect(function()
+            setclipboard(text)
         end)
+    else
+        copyButton.Visible = false
     end
 
-    for i, option in ipairs(options) do
-        createOptionButton(option, i)
+    if redirectable then
+        redirectButton.MouseButton1Click:Connect(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Redirecting...",
+                Text = "Attempting to open " .. text
+            })
+            game.Workspace.Parent.Parent.Parent.CoreGui:FindFirstChild("CoreGuiScript"):FindFirstChild("OpenUrl"):Fire(text)
+        end)
+    else
+        redirectButton.Visible = false
     end
 
-    mainButton.MouseButton1Click:Connect(function()
-        optionsFrame.Visible = not optionsFrame.Visible
-        if optionsFrame.Visible then
-            local totalHeight = 0
-            for _, itemButton in ipairs(itemButtons) do
-                totalHeight = totalHeight + itemButton.AbsoluteSize.Y + optionsLayout.Padding.Offset
-            end
-            optionsFrame.Size = UDim2.new(1, 0, 0, math.min(totalHeight, ItemsScrollingFrame.AbsoluteSize.Y * 0.8))
-            optionsFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+    return linkFrame
+end
+
+function PirokaHub:AddTextbox(text, defaultText, callback)
+    local textboxFrame = Instance.new("Frame")
+    textboxFrame.Name = "Textbox"
+    textboxFrame.Size = UDim2.new(1, 0, 0, 30)
+    textboxFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    textboxFrame.BackgroundTransparency = 0.8
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.77, 0, 1, 0)
+    label.Position = UDim2.new(0.01, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = text
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextSize = 10
+    label.Parent = textboxFrame
+
+    local textbox = Instance.new("TextBox")
+    textbox.Name = "Valor"
+    textbox.Size = UDim2.new(0.18, 0, 0.6, 0)
+    textbox.Position = UDim2.new(0.79, 0, 0.2, 0)
+    textbox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    textbox.BackgroundTransparency = 0.5
+    textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textbox.Text = defaultText
+    textbox.TextSize = 10
+    textbox.Parent = textboxFrame
+
+    textbox.FocusLost:Connect(function()
+        if callback then
+            callback(textbox.Text)
         end
     end)
     
-    dropdownFrame.LayoutOrder = getNextLayoutOrder()
-    return ElementWrapper.new(dropdownFrame)
+    return textboxFrame
 end
 
---- Inicializa a UI, parentando-a na PlayerGui e posicionando-a.
+function PirokaHub:AddSlider(text, defaultValue, min, max, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Name = "Slider"
+    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    sliderFrame.BackgroundTransparency = 0.8
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.77, 0, 0.5, 0)
+    label.Position = UDim2.new(0.01, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = text
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextSize = 10
+    label.Parent = sliderFrame
+
+    local valueBox = Instance.new("TextBox")
+    valueBox.Name = "Valor"
+    valueBox.Size = UDim2.new(0.09, 0, 0.4, 0)
+    valueBox.Position = UDim2.new(0.89, 0, 0.1, 0)
+    valueBox.BackgroundTransparency = 0.5
+    valueBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    valueBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueBox.Text = tostring(defaultValue)
+    valueBox.TextSize = 10
+    valueBox.Parent = sliderFrame
+
+    local line = Instance.new("Frame")
+    line.Name = "Linha"
+    line.Size = UDim2.new(0.95, 0, 0, 3)
+    line.Position = UDim2.new(0.02, 0, 0.75, 0)
+    line.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    line.Parent = sliderFrame
+
+    local filledLine = Instance.new("Frame")
+    filledLine.Name = "Linha2"
+    filledLine.Size = UDim2.new(0, 0, 1, 0)
+    filledLine.Position = UDim2.new(0, 0, 0, 0)
+    filledLine.BackgroundColor3 = Color3.fromRGB(54, 255, 15)
+    filledLine.Parent = line
+
+    local ball = Instance.new("Frame")
+    ball.Name = "Bola"
+    ball.Size = UDim2.new(0, 10, 0, 10)
+    ball.Position = UDim2.new(0, 0, 0, -3.5)
+    ball.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ball.ZIndex = 2
+    ball.Parent = line
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = ball
+
+    local drag = false
+    local function update(pos)
+        local value = math.floor((pos / line.AbsoluteSize.X) * (max - min) + min)
+        value = math.max(min, math.min(max, value))
+        local x = (value - min) / (max - min)
+        ball.Position = UDim2.new(x, 0, 0, -3.5)
+        filledLine.Size = UDim2.new(x, 0, 1, 0)
+        valueBox.Text = tostring(value)
+        if callback then
+            callback(value)
+        end
+    end
+
+    ball.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            drag = true
+        end
+    end)
+    
+    ball.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            drag = false
+        end
+    end)
+    
+    line.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            update(input.Position.X - line.AbsolutePosition.X)
+            drag = true
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if drag and input.UserInputType == Enum.UserInputType.MouseMovement then
+            update(input.Position.X - line.AbsolutePosition.X)
+        end
+    end)
+
+    valueBox.FocusLost:Connect(function()
+        local value = tonumber(valueBox.Text)
+        if value then
+            value = math.max(min, math.min(max, value))
+            local x = (value - min) / (max - min)
+            ball.Position = UDim2.new(x, 0, 0, -3.5)
+            filledLine.Size = UDim2.new(x, 0, 1, 0)
+            valueBox.Text = tostring(value)
+            if callback then
+                callback(value)
+            end
+        end
+    end)
+
+    -- Initial position
+    local initialX = (defaultValue - min) / (max - min)
+    ball.Position = UDim2.new(initialX, 0, 0, -3.5)
+    filledLine.Size = UDim2.new(initialX, 0, 1, 0)
+
+    return sliderFrame
+end
+
+
+function PirokaHub:AddButton(text, callback)
+    local button = Instance.new("TextButton")
+    button.Name = "Button"
+    button.Size = UDim2.new(1, 0, 0, 30)
+    button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    button.BackgroundTransparency = 0.8
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Text = text
+    button.TextSize = 14
+    button.Font = Enum.Font.SourceSans
+    
+    local corner = Instance.new("UICorner")
+    corner.Parent = button
+
+    button.MouseButton1Click:Connect(function()
+        if callback then
+            callback()
+        end
+    end)
+    
+    return button
+end
+
+function PirokaHub:AddToggle(text, initialState, callback)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Name = "Toggle"
+    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    toggleFrame.BackgroundTransparency = 0.8
+    
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.Position = UDim2.new(0.01, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = text
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextSize = 12
+    label.Parent = toggleFrame
+
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Name = "Button"
+    toggleButton.Size = UDim2.new(0.2, 0, 0.7, 0)
+    toggleButton.Position = UDim2.new(0.79, 0, 0.15, 0)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    toggleButton.Text = ""
+    toggleButton.Parent = toggleFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.Parent = toggleButton
+
+    local state = initialState or false
+    local function updateColor()
+        if state then
+            toggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        else
+            toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end
+    updateColor()
+
+    toggleButton.MouseButton1Click:Connect(function()
+        state = not state
+        updateColor()
+        if callback then
+            callback(state)
+        end
+    end)
+    
+    return toggleFrame
+end
+
+
+function PirokaHub:AddDropdown(text, items, multiSelect, callback)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Name = "Dropdown"
+    dropdownFrame.Size = UDim2.new(1, 0, 0, 30)
+    dropdownFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    dropdownFrame.BackgroundTransparency = 0.8
+
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Size = UDim2.new(0.77, 0, 1, 0)
+    label.Position = UDim2.new(0.01, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = text
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextSize = 12
+    label.Parent = dropdownFrame
+
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Name = "Button"
+    dropdownButton.Size = UDim2.new(0.2, 0, 0.7, 0)
+    dropdownButton.Position = UDim2.new(0.79, 0, 0.15, 0)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    dropdownButton.BackgroundTransparency = 0.5
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.Text = "▼"
+    dropdownButton.Parent = dropdownFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.Parent = dropdownButton
+
+    local itemsFrame = Instance.new("Frame")
+    itemsFrame.Name = "ItemsFrame"
+    itemsFrame.Size = UDim2.new(1, 0, 0, 0)
+    itemsFrame.AutomaticSize = Enum.AutomaticSize.Y
+    itemsFrame.Position = UDim2.new(0, 0, 1, 0)
+    itemsFrame.BackgroundTransparency = 0.8
+    itemsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    itemsFrame.Visible = false
+    itemsFrame.Parent = dropdownFrame
+    
+    local itemsLayout = Instance.new("UIListLayout")
+    itemsLayout.Padding = UDim.new(0, 5)
+    itemsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    itemsLayout.Parent = itemsFrame
+
+    local selectedItems = {}
+    local function updateSelectedText()
+        if #selectedItems > 0 then
+            label.Text = table.concat(selectedItems, ", ")
+        else
+            label.Text = text
+        end
+    end
+
+    local function addItem(itemText)
+        local itemButton = Instance.new("TextButton")
+        itemButton.Name = "Item"
+        itemButton.Size = UDim2.new(1, 0, 0, 20)
+        itemButton.BackgroundTransparency = 1
+        itemButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        itemButton.Text = itemText
+        itemButton.TextSize = 12
+        itemButton.Parent = itemsFrame
+        
+        itemButton.MouseButton1Click:Connect(function()
+            if multiSelect then
+                local found = false
+                for i, v in ipairs(selectedItems) do
+                    if v == itemText then
+                        table.remove(selectedItems, i)
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    table.insert(selectedItems, itemText)
+                end
+            else
+                selectedItems = {itemText}
+                itemsFrame.Visible = false
+            end
+            updateSelectedText()
+            if callback then
+                callback(selectedItems)
+            end
+        end)
+    end
+
+    for _, item in ipairs(items) do
+        addItem(item)
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(function()
+        itemsFrame.Visible = not itemsFrame.Visible
+        if itemsFrame.Visible then
+            dropdownFrame.Size = UDim2.new(1, 0, 0, 30 + itemsFrame.AbsoluteSize.Y)
+        else
+            dropdownFrame.Size = UDim2.new(1, 0, 0, 30)
+        end
+    end)
+    
+    return dropdownFrame
+end
+
 function PirokaHub.Init()
-	ScreenGui.Parent = PlayerGui
-	-- Garante que o layout é calculado
-	for _, page in ipairs(ItemsScrollingFrame:GetChildren()) do
-		if page:IsA("Frame") and page:FindFirstChild("PageLayout") then
-			local layout = page:FindFirstChild("PageLayout")
-			if layout then
-				layout:ApplyLayout()
-			end
-		end
-	end
+    local mainPage = PirokaHub:AddPage("Main")
+    local settingsPage = PirokaHub:AddPage("Settings")
+    local infoPage = PirokaHub:AddPage("Info")
+
+    PirokaHub:AddTab("Main", mainPage)
+    PirokaHub:AddTab("Settings", settingsPage)
+    PirokaHub:AddTab("Info", infoPage)
+
+    PirokaHub:AddCategory("General Options"):SetParent(mainPage)
+
+    PirokaHub:AddButton("Click Me!", function()
+        print("Button clicked!")
+    end):SetParent(mainPage)
+
+    PirokaHub:AddToggle("Enable Feature", false, function(newState)
+        print("Feature enabled: " .. tostring(newState))
+    end):SetParent(mainPage)
+
+    PirokaHub:AddSlider("Speed", 50, 0, 100, function(value)
+        print("Speed set to: " .. value)
+    end):SetParent(mainPage)
+
+    PirokaHub:AddTextbox("Player Name", "Guest", function(text)
+        print("Player name set to: " .. text)
+    end):SetParent(mainPage)
+
+    PirokaHub:AddLine():SetParent(mainPage)
+
+    PirokaHub:AddLabel("Informacoes"):SetParent(infoPage)
+
+    PirokaHub:AddLink("https://roblox.com", "rbxassetid://6253457591", true, true):SetParent(infoPage)
+
+    PirokaHub:AddCategory("Settings"):SetParent(settingsPage)
+    PirokaHub:AddDropdown("Game Mode", {"PvP", "PvE", "Free-for-all"}, false, function(selected)
+        print("Game Mode selected: " .. selected[1])
+    end):SetParent(settingsPage)
+
+    -- Show the initial page
+    mainPage.Visible = true
 end
 
 return PirokaHub
