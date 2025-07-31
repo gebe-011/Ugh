@@ -1,6 +1,6 @@
 --[=[
     PirokaHub UI Library
-    Convertido por Gemini
+    Convertido por Gemini, baseado no seu script do Local Maze GUI Creator
 ]=]
 
 local PirokaHub = {}
@@ -22,14 +22,18 @@ PirokaHubFrame.BackgroundTransparency = 0.5
 PirokaHubFrame.BorderSizePixel = 0
 PirokaHubFrame.Parent = ScreenGui
 
+local UICorner = Instance.new("UICorner")
+UICorner.Parent = PirokaHubFrame
+
 -- Draggable functionality
 local dragging
 local dragOffset
 local mover = Instance.new("TextButton")
+mover.Name = "Mover"
 mover.Text = "Piroka Hub"
-mover.Size = UDim2.new(1, 0, 0.08, 0)
-mover.Position = UDim2.new(0, 0, 0, 0)
-mover.BackgroundColor3 = PirokaHubFrame.BackgroundColor3
+mover.Size = UDim2.new(1, 0, 0.14286, 0)
+mover.Position = UDim2.new(0, 0, -0.14286, 0)
+mover.BackgroundColor3 = Color3.fromRGB(103, 52, 4)
 mover.BackgroundTransparency = 0.2
 mover.Font = Enum.Font.SourceSans
 mover.TextSize = 16
@@ -57,12 +61,12 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- Tab ScrollingFrame
+-- Tabs ScrollingFrame
 local TabsContainer = Instance.new("ScrollingFrame")
 TabsContainer.Name = "Tabs"
 TabsContainer.Size = UDim2.new(0.47619, 0, 1, 0)
-TabsContainer.Position = UDim2.new(0, 0, 0.08, 0)
-TabsContainer.BackgroundColor3 = PirokaHubFrame.BackgroundColor3
+TabsContainer.Position = UDim2.new(-0.47619, 0, 0, 0)
+TabsContainer.BackgroundColor3 = Color3.fromRGB(255, 44, 173)
 TabsContainer.BackgroundTransparency = 0.5
 TabsContainer.BorderSizePixel = 0
 TabsContainer.ScrollBarThickness = 0
@@ -71,16 +75,16 @@ TabsContainer.Parent = PirokaHubFrame
 
 local tabsLayout = Instance.new("UIListLayout")
 tabsLayout.Name = "UIListLayout"
-tabsLayout.Padding = UDim.new(0, 5)
+tabsLayout.Padding = UDim.new(0.003, 2)
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = TabsContainer
 
 -- Elements ScrollingFrame
 local ElementsContainer = Instance.new("ScrollingFrame")
-ElementsContainer.Name = "Elements"
-ElementsContainer.Size = UDim2.new(0.52381, 0, 1, 0)
-ElementsContainer.Position = UDim2.new(0.47619, 0, 0.08, 0)
-ElementsContainer.BackgroundColor3 = PirokaHubFrame.BackgroundColor3
+ElementsContainer.Name = "Itens"
+ElementsContainer.Size = UDim2.new(0.9932, 0, 0.9881, 0)
+ElementsContainer.Position = UDim2.new(0, 0, 0.0119, 0)
+ElementsContainer.BackgroundColor3 = Color3.fromRGB(255, 44, 173)
 ElementsContainer.BackgroundTransparency = 1
 ElementsContainer.BorderSizePixel = 0
 ElementsContainer.ScrollBarThickness = 0
@@ -89,8 +93,11 @@ ElementsContainer.Parent = PirokaHubFrame
 
 local elementsLayout = Instance.new("UIListLayout")
 elementsLayout.Name = "UIListLayout"
-elementsLayout.Padding = UDim.new(0, 5)
-elementsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+elementsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+elementsLayout.HorizontalFlex = Enum.UIFlexAlignment.SpaceAround
+elementsLayout.Padding = UDim.new(0.01, 2)
+elementsLayout.SortOrder = Enum.SortOrder.Custom
+elementsLayout.ItemLineAlignment = Enum.ItemLineAlignment.End
 elementsLayout.Parent = ElementsContainer
 
 local pages = {}
@@ -116,19 +123,26 @@ function PirokaHub:AddPage(name)
 end
 
 function PirokaHub:AddTab(name, page)
-    local tabButton = Instance.new("TextButton")
+    local tabButton = Instance.new("Frame")
     tabButton.Name = "Tab_" .. name
     tabButton.Size = UDim2.new(1, 0, 0, 30)
     tabButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     tabButton.BackgroundTransparency = 0.7
-    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tabButton.Text = name
     tabButton.Parent = TabsContainer
+
+    local tabName = Instance.new("TextButton")
+    tabName.Name = "TabName"
+    tabName.Size = UDim2.new(0.98529, 0, 1.17466, 0)
+    tabName.Text = name
+    tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    tabName.BackgroundTransparency = 1
+    tabName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabName.Parent = tabButton
 
     local tabCorner = Instance.new("UICorner")
     tabCorner.Parent = tabButton
 
-    tabButton.MouseButton1Click:Connect(function()
+    tabName.MouseButton1Click:Connect(function()
         for _, otherPage in pairs(pages) do
             otherPage.Visible = false
         end
@@ -140,10 +154,10 @@ end
 
 function PirokaHub:AddCategory(text)
     local categoryFrame = Instance.new("Frame")
-    categoryFrame.Name = "Category"
+    categoryFrame.Name = "Categoria"
     categoryFrame.Size = UDim2.new(1, 0, 0, 25)
-    categoryFrame.BackgroundTransparency = 0.8
     categoryFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    categoryFrame.BackgroundTransparency = 0.8
 
     local categoryLabel = Instance.new("TextLabel")
     categoryLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -158,11 +172,10 @@ end
 
 function PirokaHub:AddLine()
     local lineFrame = Instance.new("Frame")
-    lineFrame.Name = "Line"
+    lineFrame.Name = "Linha"
     lineFrame.Size = UDim2.new(1, 0, 0, 2)
     lineFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     lineFrame.BackgroundTransparency = 0.8
-
     return lineFrame
 end
 
@@ -174,8 +187,6 @@ function PirokaHub:AddLabel(text)
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.Text = text
     label.TextSize = 12
-    label.Parent = elements.Label
-
     return label
 end
 
@@ -185,7 +196,7 @@ function PirokaHub:AddLink(text, image, redirectable, copyable)
     linkFrame.Size = UDim2.new(1, 0, 0, 50)
     linkFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     linkFrame.BackgroundTransparency = 0.8
-
+    
     local linkLabel = Instance.new("TextLabel")
     linkLabel.Name = "LinkText"
     linkLabel.Size = UDim2.new(0.75, 0, 0.5, 0)
@@ -241,7 +252,7 @@ function PirokaHub:AddLink(text, image, redirectable, copyable)
     else
         redirectButton.Visible = false
     end
-
+    
     return linkFrame
 end
 
@@ -251,7 +262,7 @@ function PirokaHub:AddTextbox(text, defaultText, callback)
     textboxFrame.Size = UDim2.new(1, 0, 0, 30)
     textboxFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     textboxFrame.BackgroundTransparency = 0.8
-
+    
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.77, 0, 1, 0)
     label.Position = UDim2.new(0.01, 0, 0, 0)
@@ -261,7 +272,7 @@ function PirokaHub:AddTextbox(text, defaultText, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextSize = 10
     label.Parent = textboxFrame
-
+    
     local textbox = Instance.new("TextBox")
     textbox.Name = "Valor"
     textbox.Size = UDim2.new(0.18, 0, 0.6, 0)
@@ -388,7 +399,6 @@ function PirokaHub:AddSlider(text, defaultValue, min, max, callback)
         end
     end)
 
-    -- Initial position
     local initialX = (defaultValue - min) / (max - min)
     ball.Position = UDim2.new(initialX, 0, 0, -3.5)
     filledLine.Size = UDim2.new(initialX, 0, 1, 0)
@@ -469,7 +479,6 @@ function PirokaHub:AddToggle(text, initialState, callback)
     
     return toggleFrame
 end
-
 
 function PirokaHub:AddDropdown(text, items, multiSelect, callback)
     local dropdownFrame = Instance.new("Frame")
@@ -578,43 +587,26 @@ end
 
 function PirokaHub.Init()
     local mainPage = PirokaHub:AddPage("Main")
-    local settingsPage = PirokaHub:AddPage("Settings")
-    local infoPage = PirokaHub:AddPage("Info")
+    local rolaPage = PirokaHub:AddPage("Rola")
 
-    PirokaHub:AddTab("Main", mainPage)
-    PirokaHub:AddTab("Settings", settingsPage)
-    PirokaHub:AddTab("Info", infoPage)
+    PirokaHub:AddTab("Main", mainPage):SetParent(TabsContainer)
+    PirokaHub:AddTab("Rola", rolaPage):SetParent(TabsContainer)
 
-    PirokaHub:AddCategory("General Options"):SetParent(mainPage)
-
-    PirokaHub:AddButton("Click Me!", function()
-        print("Button clicked!")
-    end):SetParent(mainPage)
-
-    PirokaHub:AddToggle("Enable Feature", false, function(newState)
-        print("Feature enabled: " .. tostring(newState))
-    end):SetParent(mainPage)
-
-    PirokaHub:AddSlider("Speed", 50, 0, 100, function(value)
-        print("Speed set to: " .. value)
-    end):SetParent(mainPage)
-
-    PirokaHub:AddTextbox("Player Name", "Guest", function(text)
-        print("Player name set to: " .. text)
-    end):SetParent(mainPage)
-
+    -- Itens da pagina 'mainPage'
+    PirokaHub:AddCategory("Categorias"):SetParent(mainPage)
     PirokaHub:AddLine():SetParent(mainPage)
+    PirokaHub:AddButton("PirokaHub"):SetParent(mainPage)
+    PirokaHub:AddToggle("PirokaHub", true):SetParent(mainPage)
+    PirokaHub:AddDropdown("Opções", {"Opcao1", "Opcao2", "Opcao3"}, false):SetParent(mainPage)
+    PirokaHub:AddTextbox("TextBox", "PirokaHub"):SetParent(mainPage)
+    PirokaHub:AddSlider("Slider", 50, 0, 100):SetParent(mainPage)
+    PirokaHub:AddLink("https://www.roblox.com", "rbxassetid://13589947834", true, true):SetParent(mainPage)
+    
+    -- Itens da pagina 'rolaPage'
+    PirokaHub:AddCategory("Categorias"):SetParent(rolaPage)
+    PirokaHub:AddLabel("Label Teste"):SetParent(rolaPage)
 
-    PirokaHub:AddLabel("Informacoes"):SetParent(infoPage)
-
-    PirokaHub:AddLink("https://roblox.com", "rbxassetid://6253457591", true, true):SetParent(infoPage)
-
-    PirokaHub:AddCategory("Settings"):SetParent(settingsPage)
-    PirokaHub:AddDropdown("Game Mode", {"PvP", "PvE", "Free-for-all"}, false, function(selected)
-        print("Game Mode selected: " .. selected[1])
-    end):SetParent(settingsPage)
-
-    -- Show the initial page
+    -- Mostra a página inicial
     mainPage.Visible = true
 end
 
