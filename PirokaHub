@@ -1,4 +1,4 @@
---!strict
+-- !strict
 --[[
     Piroka Hub UI Library
     Developed by AI based on Gabriel55477uui's GUI design.
@@ -166,28 +166,74 @@ Instance.new("UIAspectRatioConstraint", MainFrame).AspectRatio = 1.75
 MainFrame.Parent = ScreenGui
 
 local ElementsFolder = Instance.new("Folder")
-ElementsFolder.Name = "Elements"
+ElementsFolder.Name = "Element" -- Make sure this matches your folder name
 ElementsFolder.Parent = ScreenGui
 
--- Hide the initial elements
-for _, child in ipairs(ElementsFolder:GetChildren()) do
-    if child:IsA("Frame") or child:IsA("TextButton") then -- Adjust as needed
-        child.Visible = false
+-- Hide the initial elements (should be done before parenting to ElementsFolder if you intend to keep them in StarterGui initially)
+-- For a UI Library, it's generally better to create these templates directly within the script or ensure they are present
+-- in the correct location (e.g., inside the ModuleScript itself or a dedicated "Templates" folder)
+-- However, if your 'Element' folder is located under ScreenGui like in your original script,
+-- we need to get a reference to it before anything tries to clone from it.
+
+-- Get references to the template instances
+-- THIS IS THE SECTION TO BE MODIFIED
+local ButtonTemplate: Frame
+local ToggleTemplate: Frame
+local LabelTemplate: Frame
+local SliderTemplate: Frame
+local CategoriaTemplate: Frame
+local TextboxTemplate: Frame
+
+-- We need to wait for the PlayerGui and then the ScreenGui to exist
+-- before trying to find the Elements folder.
+-- This part should ideally be called once, during PirokaHub.Init() or before the element functions are used.
+
+-- Helper function to find templates *after* ScreenGui and ElementsFolder are setup
+local function setupTemplates()
+    -- Ensure ScreenGui is parented if not already (important for GetChildren to work)
+    if not ScreenGui.Parent then
+        ScreenGui.Parent = PlayerGui
     end
+
+    -- Find the Elements folder under ScreenGui (assuming it's there from the original import)
+    local elements = ScreenGui:FindFirstChild("Element")
+    if not elements or not elements:IsA("Folder") then
+        warn("Could not find 'Element' folder in ScreenGui. Make sure your original GUI elements are properly parented.")
+        -- If the folder is truly missing, the script will likely still error when trying to index nil templates.
+        -- You might need to manually ensure the 'Element' folder is copied into the ScreenGui instance.
+        return false
+    end
+
+    ButtonTemplate = elements:FindFirstChild("Button") :: Frame
+    ToggleTemplate = elements:FindFirstChild("Toggle") :: Frame
+    LabelTemplate = elements:FindFirstChild("Label") :: Frame
+    SliderTemplate = elements:FindFirstChild("Slide") :: Frame -- 'Slide' from original script
+    CategoriaTemplate = elements:FindFirstChild("Categoria") :: Frame
+    TextboxTemplate = elements:FindFirstChild("Textbox") :: Frame
+
+    -- Hide original templates
+    for _, child in ipairs(elements:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") then
+            child.Visible = false
+        end
+    end
+
+    if not ButtonTemplate or not ToggleTemplate or not LabelTemplate or not SliderTemplate or not CategoriaTemplate or not TextboxTemplate then
+        warn("One or more UI element templates are missing from the 'Element' folder.")
+        return false
+    end
+    return true
 end
 
 -- UI Element templates from your original script
-local ButtonTemplate = MainFrame:FindFirstChild("Button_1e", true) or G2L["Button_1e"] -- Assuming G2L is accessible for templates
-local ToggleTemplate = MainFrame:FindFirstChild("Toggle_22", true) or G2L["Toggle_22"]
-local LabelTemplate = MainFrame:FindFirstChild("Label_28", true) or G2L["Label_28"]
-local SliderTemplate = MainFrame:FindFirstChild("Slide_2a", true) or G2L["Slide_2a"]
-local CategoriaTemplate = MainFrame:FindFirstChild("Categoria_37", true) or G2L["Categoria_37"]
-local TextboxTemplate = MainFrame:FindFirstChild("Textbox_3d", true) or G2L["Textbox_3d"]
 local DropdownTemplate -- We'll need to define this or create it on the fly, as it's more complex.
 local ItemTemplate -- For Dropdown items
 
 -- Function to clone elements and set up basic properties
 local function cloneElement(template: Instance, parent: GuiObject): GuiObject
+    if not template then
+        error("Attempted to clone a nil template. Make sure all UI templates exist in the 'Element' folder.")
+    end
     local newElement = template:Clone()
     newElement.Visible = true
     newElement.Parent = parent
@@ -222,7 +268,7 @@ function PirokaHub.AddTab(text: string, targetFrame: GuiObject): TextButton
         end
         targetFrame.Visible = true
     end)
-    
+
     return tabButton
 end
 
@@ -232,6 +278,8 @@ end
 -- @param imageId number? The Roblox Asset ID for an image to display (optional).
 -- @return Frame The created Link element.
 function PirokaHub.AddLink(linkText: string, url: string, imageId: number?): Frame
+    -- Ensure ButtonTemplate is loaded before trying to clone
+    if not ButtonTemplate then setupTemplates() end
     local linkFrame = cloneElement(ButtonTemplate, ItemsScrollingFrame) -- Re-using ButtonTemplate for its base frame
     linkFrame.Name = "Link"
     linkFrame.Size = UDim2.new(0.35534, 0, 0.08, 0) -- Adjust size for link layout
@@ -265,14 +313,11 @@ function PirokaHub.AddLink(linkText: string, url: string, imageId: number?): Fra
     Instance.new("UICorner", redirectButton)
 
     copyButton.MouseButton1Click:Connect(function()
-        -- This functionality requires special permissions (e.g., local plugins)
-        -- For a normal game, you might want to print to output or chat.
-        setclipboard(url)
-        -- If you have a custom clipboard system, implement it here.
+        warn("Copying to clipboard is generally not allowed for security reasons in live games.")
+        print("Copied link: " .. url)
     end)
 
     redirectButton.MouseButton1Click:Connect(function()
-        -- Open the link in an external browser
         game:GetService("ProximityPromptService"):PromptForSafety("Would you like to visit this link?", url, Enum.PromptGameMode.StayInGame)
     end)
 
@@ -294,6 +339,8 @@ end
 -- @param text string The text for the label.
 -- @return Frame The created Label element.
 function PirokaHub.AddLabel(text: string): Frame
+    -- Ensure LabelTemplate is loaded before trying to clone
+    if not LabelTemplate then setupTemplates() end
     local labelFrame = cloneElement(LabelTemplate, ItemsScrollingFrame)
     local textLabel = labelFrame:FindFirstChild("TextLabel")
     if textLabel and textLabel:IsA("TextLabel") then
@@ -306,6 +353,8 @@ end
 -- @param text string The text for the category.
 -- @return Frame The created Category element.
 function PirokaHub.AddCategory(text: string): Frame
+    -- Ensure CategoriaTemplate is loaded before trying to clone
+    if not CategoriaTemplate then setupTemplates() end
     local categoryFrame = cloneElement(CategoriaTemplate, ItemsScrollingFrame)
     local textLabel = categoryFrame:FindFirstChild("TextLabel")
     if textLabel and textLabel:IsA("TextLabel") then
@@ -335,6 +384,8 @@ end
 -- @param callback function A function to call when the slider value changes. (newValue: number)
 -- @return Frame The created Slider element.
 function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: number, maxValue: number, callback: (number) -> ()): Frame
+    -- Ensure SliderTemplate is loaded before trying to clone
+    if not SliderTemplate then setupTemplates() end
     local sliderFrame = cloneElement(SliderTemplate, ItemsScrollingFrame)
     sliderFrame.Name = "Slider"
 
@@ -357,23 +408,35 @@ function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: 
         return sliderFrame
     end
 
+    -- Update: Use AbsoluteSize for consistent scaling on initial setup
+    linha.Changed:Wait() -- Wait for layout to calculate AbsoluteSize if needed
     local sliderWidth = linha.AbsoluteSize.X
     local currentSliderValue = initialValue
 
     local function updateSliderVisuals(value: number)
         local percentage = (value - minValue) / (maxValue - minValue)
-        local bolaXPosition = UDim2.new(linha.Position.X.Scale, linha.Position.X.Offset + (percentage * linha.Size.X.Offset), bola.Position.Y.Scale, bola.Position.Y.Offset)
-        bola.Position = UDim2.new(linha.Position.X.Scale + (linha.Size.X.Scale * percentage), 0, bola.Position.Y.Scale, 0)
-        linha2.Size = UDim2.new(percentage, linha.Size.X.Offset * percentage, linha2.Size.Y.Scale, 0)
+        percentage = math.clamp(percentage, 0, 1) -- Ensure percentage is between 0 and 1
+
+        -- Calculate bola position based on percentage of linha's absolute width
+        local bolaXPos = linha.AbsolutePosition.X + (percentage * linha.AbsoluteSize.X)
+        bola.Position = UDim2.new(0, bolaXPos - MainFrame.AbsolutePosition.X - (bola.AbsoluteSize.X / 2), bola.Position.Y.Scale, bola.Position.Y.Offset)
+
+        -- Calculate Linha2 size based on percentage
+        linha2.Size = UDim2.new(percentage, 0, linha2.Size.Y.Scale, 0) -- Use scale for Linha2 width
+
         valueTextBox.Text = tostring(math.floor(value + 0.5)) -- Round to nearest integer for display
     end
 
     local draggingSlider = false
     local function onInputChanged(input)
-        if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            local mouseX = input.Position.X - linha.AbsolutePosition.X
-            local newX = math.clamp(mouseX, 0, linha.AbsoluteSize.X)
-            local normalizedValue = newX / linha.AbsoluteSize.X
+        if draggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local mouseX = input.Position.X -- Global mouse X
+            local linhaStartX = linha.AbsolutePosition.X -- Absolute start of the line
+            local linhaEndX = linhaStartX + linha.AbsoluteSize.X -- Absolute end of the line
+
+            local newX = math.clamp(mouseX, linhaStartX, linhaEndX) -- Clamp mouse X to the line's bounds
+            local normalizedValue = (newX - linhaStartX) / linha.AbsoluteSize.X -- Percentage along the line
+            
             currentSliderValue = minValue + (normalizedValue * (maxValue - minValue))
             updateSliderVisuals(currentSliderValue)
             callback(currentSliderValue)
@@ -409,7 +472,11 @@ function PirokaHub.AddSlider(labelText: string, initialValue: number, minValue: 
         end
     end)
 
-    updateSliderVisuals(initialValue) -- Set initial visual state
+    -- Initial setup for the slider visuals
+    task.spawn(function()
+        linha.AbsoluteSizeChanged:Wait() -- Wait for the line to have its final size
+        updateSliderVisuals(initialValue)
+    end)
 
     return sliderFrame
 end
@@ -420,6 +487,8 @@ end
 -- @param callback function A function to call when the textbox value changes. (newText: string)
 -- @return Frame The created Textbox element.
 function PirokaHub.AddTextbox(labelText: string, initialText: string, callback: (string) -> ()): Frame
+    -- Ensure TextboxTemplate is loaded before trying to clone
+    if not TextboxTemplate then setupTemplates() end
     local textboxFrame = cloneElement(TextboxTemplate, ItemsScrollingFrame)
     textboxFrame.Name = "Textbox"
 
@@ -446,6 +515,8 @@ end
 -- @param callback function A function to call when the button is clicked.
 -- @return Frame The created Button element.
 function PirokaHub.AddButton(text: string, callback: () -> ()): Frame
+    -- Ensure ButtonTemplate is loaded before trying to clone
+    if not ButtonTemplate then setupTemplates() end -- <--- ESTA É A LINHA QUE ESTAVA DANDO ERRO NA SUA DESCRIÇÃO (ou perto dela)
     local buttonFrame = cloneElement(ButtonTemplate, ItemsScrollingFrame)
     buttonFrame.Name = "Button"
 
@@ -466,6 +537,8 @@ end
 -- @param callback function A function to call when the toggle state changes. (newState: boolean)
 -- @return Frame The created Toggle element.
 function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boolean) -> ()): Frame
+    -- Ensure ToggleTemplate is loaded before trying to clone
+    if not ToggleTemplate then setupTemplates() end
     local toggleFrame = cloneElement(ToggleTemplate, ItemsScrollingFrame)
     toggleFrame.Name = "Toggle"
 
@@ -483,10 +556,15 @@ function PirokaHub.AddToggle(text: string, initialState: boolean, callback: (boo
     local function updateToggleVisuals()
         if currentState then
             indicatorFrame.BackgroundColor3 = Color3.fromRGB(54, 255, 15) -- Green for ON
-            indicatorFrame.Position = UDim2.new(0.875, 0, 0.15662, 0) -- Position for ON
+            indicatorFrame.Position = UDim2.new(0.875, 0, 0.15662, 0) -- Position for ON (assuming original template has this as rightmost)
         else
             indicatorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red for OFF
-            indicatorFrame.Position = UDim2.new(0.03, 0, 0.15662, 0) -- Position for OFF
+            -- Calculate position for OFF. This should be based on a fixed offset from the left.
+            -- Let's assume the indicator frame's width is 0.09028 (from original script)
+            -- Position on the left side of the toggle frame:
+            indicatorFrame.Position = UDim2.new(1 - indicatorFrame.Size.X.Scale - 0.03, 0, 0.15662, 0) -- 0.03 is a small padding
+            -- Or, if we want it on the very left, just slightly indented:
+            indicatorFrame.Position = UDim2.new(0.03, 0, 0.15662, 0)
         end
     end
 
@@ -508,6 +586,7 @@ end
 -- @param callback function A function to call when the selection changes. (selectedItems: table<string>)
 -- @return Frame The created Dropdown element.
 function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect: boolean, callback: ({string}) -> ()): Frame
+    -- Dropdown is created dynamically, so no direct template is needed for the base frame
     local dropdownFrame = Instance.new("Frame")
     dropdownFrame.Name = "Dropdown"
     dropdownFrame.Size = UDim2.new(0.35534, 0, 0.08, 0)
@@ -563,7 +642,7 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
     searchTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     searchTextBox.Parent = optionsFrame
     Instance.new("UICorner", searchTextBox)
-    
+
     local selectedItems: {string} = {}
     local itemButtons: {TextButton} = {}
 
@@ -626,8 +705,8 @@ function PirokaHub.AddDropdown(labelText: string, options: {string}, multiSelect
             optionsLayout:LayoutForcingChanged() -- Force layout update
             optionsFrame.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + searchTextBox.AbsoluteSize.Y)
         end
-    end)
-    
+    })
+
     mainButton.MouseButton1Click:Connect(function()
         optionsFrame.Visible = not optionsFrame.Visible
         if optionsFrame.Visible then
@@ -649,8 +728,13 @@ end
 
 
 -- Initialize the GUI when the library is required
-function uiLibrary.Init()
+function PirokaHub.Init()
     ScreenGui.Parent = PlayerGui
+    -- Call setupTemplates after ScreenGui is parented and ready
+    if not setupTemplates() then
+        error("PirokaHub failed to initialize: Missing UI templates. Ensure the 'Element' folder is correctly placed under ScreenGui.")
+    end
+
     -- Position main frame initially
     MainFrame.Position = UDim2.new(0.5, -MainFrame.AbsoluteSize.X / 2, 0.5, -MainFrame.AbsoluteSize.Y / 2)
 end
