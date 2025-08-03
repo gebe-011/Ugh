@@ -4,7 +4,6 @@ local UILibrary = {}
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
--- A função 'create' deve estar aqui, no topo do script.
 local function create(instanceType, parent, properties)
     local obj = Instance.new(instanceType)
     obj.Parent = parent
@@ -14,7 +13,6 @@ local function create(instanceType, parent, properties)
     return obj
 end
 
--- A partir daqui, a biblioteca define suas funções de UI
 function UILibrary.createWindow(title)
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
     local mainGui = create("ScreenGui", playerGui, {
@@ -117,6 +115,7 @@ function UILibrary.createWindow(title)
 end
 
 function UILibrary.createTab(parent, title)
+    -- Os botões das abas vão dentro do tabsScroll, que tem um UIListLayout
     local tabButton = create("TextButton", parent, {
         Name = "TabButton",
         Text = title,
@@ -153,6 +152,7 @@ function UILibrary.createTab(parent, title)
 end
 
 function UILibrary.createCategory(parent, title)
+    -- As categorias vão dentro do 'contentFrame' da aba, que tem um UIListLayout
     local categoryFrame = create("Frame", parent, {
         Name = "Categoria",
         BackgroundTransparency = 1,
@@ -417,11 +417,8 @@ function UILibrary.createLink(parent, title, url)
     })
 
     linkButton.MouseButton1Click:Connect(function()
-        -- You might need to use a proxy service or a special script to handle this due to Roblox's sandboxing
-        -- This will print the URL to the console, which is the safest way to handle it for most cases
         print("Opening link: " .. url)
     end)
 end
 
--- A biblioteca deve retornar a tabela UILibrary no final para funcionar com loadstring
 return UILibrary
