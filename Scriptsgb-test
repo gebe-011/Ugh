@@ -1,0 +1,425 @@
+-- UILibrary
+local UILibrary = {}
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local create = require(script.Parent:WaitForChild("UIBuilder")) -- Supondo que você use um construtor de UI separado
+
+local function create(instanceType, parent, properties)
+    local obj = Instance.new(instanceType)
+    obj.Parent = parent
+    for prop, value in pairs(properties) do
+        obj[prop] = value
+    end
+    return obj
+end
+
+function UILibrary.createWindow(title)
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    local mainGui = create("ScreenGui", playerGui, {
+        Name = title,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        ResetOnSpawn = false
+    })
+
+    local mainFrame = create("Frame", mainGui, {
+        Name = "MainFrame",
+        Active = true,
+        Draggable = true,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        Size = UDim2.new(0, 376, 0, 260),
+        Position = UDim2.new(0.5, -188, 0.5, -130)
+    })
+
+    local titleFrame = create("Frame", mainFrame, {
+        Name = "Titulo",
+        BorderSizePixel = 0,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(1, 0, 0, 28),
+    })
+
+    local titleText = create("TextLabel", titleFrame, {
+        Name = "Titulo",
+        Text = title,
+        TextStrokeTransparency = 0,
+        BorderSizePixel = 0,
+        TextSize = 18,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        TextColor3 = Color3.fromRGB(255, 255, 255)
+    })
+    
+    -- UI Strokes and Corners based on the original script
+    create("UIStroke", titleText, {Thickness = 1.5, Color = Color3.fromRGB(255, 255, 255)})
+    create("UICorner", mainFrame, {CornerRadius = UDim.new(0, 5)})
+    create("UIStroke", mainFrame, {ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Thickness = 3, Color = Color3.fromRGB(255, 255, 255)})
+    
+    local contentFrame = create("Frame", mainFrame, {
+        Name = "ContentFrame",
+        BorderSizePixel = 0,
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        Size = UDim2.new(1, -122, 1, -44),
+        Position = UDim2.new(0, 112, 0, 36)
+    })
+    
+    local itemsScroll = create("ScrollingFrame", contentFrame, {
+        Name = "Items",
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        BorderSizePixel = 0,
+        ElasticBehavior = Enum.ElasticBehavior.Never,
+        BackgroundTransparency = 1,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        Size = UDim2.new(1, 0, 1, 0),
+        ScrollBarThickness = 0
+    })
+
+    create("UIListLayout", itemsScroll, {
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        VerticalAlignment = Enum.VerticalAlignment.Top,
+        Padding = UDim.new(0, 5)
+    })
+
+    local tabsFrame = create("Frame", mainFrame, {
+        Name = "TabsFrame",
+        BorderSizePixel = 0,
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        Size = UDim2.new(0, 112, 1, -44),
+        Position = UDim2.new(0, 10, 0, 36)
+    })
+
+    local tabsScroll = create("ScrollingFrame", tabsFrame, {
+        Name = "Tabs",
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        BorderSizePixel = 0,
+        ElasticBehavior = Enum.ElasticBehavior.Never,
+        BackgroundTransparency = 1,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        Size = UDim2.new(1, -4, 1, 0),
+        Position = UDim2.new(0, 2, 0, 0),
+        ScrollBarThickness = 0
+    })
+
+    create("UIListLayout", tabsScroll, {
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        VerticalAlignment = Enum.VerticalAlignment.Top,
+        Padding = UDim.new(0, 5)
+    })
+
+    local api = {
+        mainFrame = mainFrame,
+        tabs = tabsScroll,
+        content = itemsScroll
+    }
+
+    return api
+end
+
+function UILibrary.createTab(parent, title)
+    local tabButton = create("TextButton", parent, {
+        Name = "TabButton",
+        Text = title,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 30),
+        FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+        TextWrapped = true
+    })
+
+    local contentFrame = create("Frame", parent.Parent.Parent.content, {
+        Name = title,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Visible = false
+    })
+
+    create("UIListLayout", contentFrame, {
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Top,
+        Padding = UDim.new(0, 5)
+    })
+
+    tabButton.MouseButton1Click:Connect(function()
+        for _, child in pairs(parent.Parent.Parent.content:GetChildren()) do
+            if child:IsA("Frame") then
+                child.Visible = (child.Name == title)
+            end
+        end
+    end)
+    
+    return contentFrame
+end
+
+function UILibrary.createCategory(parent, title)
+    local categoryFrame = create("Frame", parent, {
+        Name = "Categoria",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 20)
+    })
+
+    local titleLabel = create("TextLabel", categoryFrame, {
+        Name = "Title",
+        Text = title,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
+    })
+end
+
+function UILibrary.createToggle(parent, title, callback)
+    local toggleFrame = create("Frame", parent, {
+        Name = "Toggle",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 30)
+    })
+
+    local toggleButton = create("TextButton", toggleFrame, {
+        Name = "ToggleButton",
+        Text = "",
+        TextSize = 14,
+        Size = UDim2.new(1, -30, 1, -4),
+        Position = UDim2.new(0, 5, 0, 2),
+        BackgroundTransparency = 1,
+    })
+
+    local backgroundFrame = create("Frame", toggleButton, {
+        Name = "Background",
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        BorderSizePixel = 0
+    })
+
+    create("UICorner", backgroundFrame, {CornerRadius = UDim.new(0, 5)})
+
+    local titleLabel = create("TextLabel", backgroundFrame, {
+        Name = "Title",
+        Text = title,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -35, 1, 0),
+        Position = UDim2.new(0, 5, 0, 0)
+    })
+
+    local stateFrame = create("Frame", backgroundFrame, {
+        Name = "StateFrame",
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        Size = UDim2.new(0, 30, 0, 20),
+        Position = UDim2.new(1, -32, 0.5, -10),
+        BorderSizePixel = 1,
+        BorderColor3 = Color3.fromRGB(255, 255, 255)
+    })
+    create("UICorner", stateFrame, {CornerRadius = UDim.new(1, 0)})
+
+    local stateBall = create("Frame", stateFrame, {
+        Name = "StateBall",
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(0, 15, 0, 15),
+        Position = UDim2.new(0, 3, 0.5, -7),
+        BorderSizePixel = 0
+    })
+    create("UICorner", stateBall, {CornerRadius = UDim.new(1, 0)})
+
+    local enabled = false
+    local text = create("TextLabel", stateBall, {
+        Text = "OFF",
+        TextSize = 9,
+        TextColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    toggleButton.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        if enabled then
+            stateBall:TweenPosition(UDim2.new(1, -18, 0.5, -7), "Out", "Quad", 0.2, true)
+            text.Text = "ON"
+            text.TextColor3 = Color3.fromRGB(255, 255, 255)
+            stateBall.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            stateFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            callback(true)
+        else
+            stateBall:TweenPosition(UDim2.new(0, 3, 0.5, -7), "Out", "Quad", 0.2, true)
+            text.Text = "OFF"
+            text.TextColor3 = Color3.fromRGB(0, 0, 0)
+            stateBall.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            stateFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            callback(false)
+        end
+    end)
+end
+
+function UILibrary.createSlider(parent, title, min, max, initial, callback)
+    local sliderFrame = create("Frame", parent, {
+        Name = "Slider",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 40)
+    })
+
+    local sliderBg = create("Frame", sliderFrame, {
+        Name = "SliderBackground",
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 4)
+    })
+    
+    create("UICorner", sliderBg, {CornerRadius = UDim.new(0, 5)})
+    
+    local titleLabel = create("TextLabel", sliderBg, {
+        Name = "Title",
+        Text = title,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -50, 0, 20),
+        Position = UDim2.new(0, 5, 0, 5)
+    })
+
+    local valueBox = create("TextBox", sliderBg, {
+        Name = "ValueBox",
+        Text = tostring(initial),
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Center,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 40, 0, 20),
+        Position = UDim2.new(1, -45, 0, 5)
+    })
+    
+    local sliderLine = create("Frame", sliderBg, {
+        Name = "SliderLine",
+        BackgroundColor3 = Color3.fromRGB(116, 116, 116),
+        Size = UDim2.new(1, -10, 0, 2),
+        Position = UDim2.new(0, 5, 0, 30)
+    })
+    create("UICorner", sliderLine, {CornerRadius = UDim.new(1, 0)})
+
+    local fillLine = create("Frame", sliderLine, {
+        Name = "FillLine",
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(0, 0, 1, 0),
+        BorderSizePixel = 0
+    })
+
+    local ball = create("Frame", fillLine, {
+        Name = "Ball",
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(0, 11, 0, 10),
+        Position = UDim2.new(1, -5.5, 0.5, -5),
+        BorderSizePixel = 0
+    })
+    create("UICorner", ball, {CornerRadius = UDim.new(1, 0)})
+
+    local dragging = false
+    ball.MouseButton1Down:Connect(function()
+        dragging = true
+    end)
+    sliderLine.MouseLeave:Connect(function()
+        dragging = false
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    sliderLine.MouseMoved:Connect(function(x, y)
+        if not dragging then return end
+        local mouse = UserInputService:GetMouseLocation()
+        local absoluteX = mouse.X - sliderLine.AbsolutePosition.X
+        local newX = math.clamp(absoluteX, 0, sliderLine.AbsoluteSize.X)
+        local percentage = newX / sliderLine.AbsoluteSize.X
+        local value = math.round(min + (max - min) * percentage)
+        
+        valueBox.Text = tostring(value)
+        fillLine.Size = UDim2.new(0, newX, 1, 0)
+        callback(value)
+    end)
+end
+
+function UILibrary.createDropdown(parent, title, options, callback)
+    local dropdownFrame = create("Frame", parent, {
+        Name = "Dropdown",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 30)
+    })
+
+    local dropdownButton = create("TextButton", dropdownFrame, {
+        Name = "DropdownButton",
+        Text = title,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json")
+    })
+
+    local dropdownList = create("ScrollingFrame", parent, {
+        Name = "DropdownList",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 100),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        Visible = false
+    })
+
+    local listLayout = create("UIListLayout", dropdownList, {
+        Padding = UDim.new(0, 5)
+    })
+
+    for _, optionText in ipairs(options) do
+        local optionButton = create("TextButton", dropdownList, {
+            Name = "OptionButton",
+            Text = optionText,
+            TextSize = 12,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 20),
+            FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json")
+        })
+
+        optionButton.MouseButton1Click:Connect(function()
+            dropdownButton.Text = optionText
+            dropdownList.Visible = false
+            callback(optionText)
+        end)
+    end
+
+    dropdownButton.MouseButton1Click:Connect(function()
+        dropdownList.Visible = not dropdownList.Visible
+    end)
+end
+
+function UILibrary.createLink(parent, title, url)
+    local linkFrame = create("Frame", parent, {
+        Name = "Link",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 30)
+    })
+
+    local linkButton = create("TextButton", linkFrame, {
+        Name = "LinkButton",
+        Text = title,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json")
+    })
+
+    linkButton.MouseButton1Click:Connect(function()
+        -- You might need to use a proxy service or a special script to handle this due to Roblox's sandboxing
+        -- This will print the URL to the console, which is the safest way to handle it for most cases
+        print("Opening link: " .. url)
+    end)
+end
+
+return UILibrary
