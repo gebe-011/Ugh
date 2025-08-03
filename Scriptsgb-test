@@ -1,9 +1,10 @@
--- UILibrary (para usar com loadstring)
+-- UILibrary (código completo para o link do GitHub)
 
 local UILibrary = {}
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
+-- A função 'create' deve estar aqui, no topo do script.
 local function create(instanceType, parent, properties)
     local obj = Instance.new(instanceType)
     obj.Parent = parent
@@ -13,6 +14,7 @@ local function create(instanceType, parent, properties)
     return obj
 end
 
+-- A partir daqui, a biblioteca define suas funções de UI
 function UILibrary.createWindow(title)
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
     local mainGui = create("ScreenGui", playerGui, {
@@ -50,7 +52,6 @@ function UILibrary.createWindow(title)
         TextColor3 = Color3.fromRGB(255, 255, 255)
     })
     
-    -- UI Strokes and Corners based on the original script
     create("UIStroke", titleText, {Thickness = 1.5, Color = Color3.fromRGB(255, 255, 255)})
     create("UICorner", mainFrame, {CornerRadius = UDim.new(0, 5)})
     create("UIStroke", mainFrame, {ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Thickness = 3, Color = Color3.fromRGB(255, 255, 255)})
@@ -422,4 +423,5 @@ function UILibrary.createLink(parent, title, url)
     end)
 end
 
+-- A biblioteca deve retornar a tabela UILibrary no final para funcionar com loadstring
 return UILibrary
