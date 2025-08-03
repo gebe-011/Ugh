@@ -1,8 +1,8 @@
--- UILibrary
+-- UILibrary (para usar com loadstring)
+
 local UILibrary = {}
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local create = require(script.Parent:WaitForChild("UIBuilder")) -- Supondo que você use um construtor de UI separado
 
 local function create(instanceType, parent, properties)
     local obj = Instance.new(instanceType)
