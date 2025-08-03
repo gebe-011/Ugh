@@ -4,6 +4,7 @@ local UILibrary = {}
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
+-- A função 'create' deve estar aqui, no topo do script.
 local function create(instanceType, parent, properties)
     local obj = Instance.new(instanceType)
     obj.Parent = parent
@@ -13,6 +14,7 @@ local function create(instanceType, parent, properties)
     return obj
 end
 
+-- A partir daqui, a biblioteca define suas funções de UI
 function UILibrary.createWindow(title)
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
     local mainGui = create("ScreenGui", playerGui, {
@@ -115,7 +117,6 @@ function UILibrary.createWindow(title)
 end
 
 function UILibrary.createTab(parent, title)
-    -- Os botões das abas vão dentro do tabsScroll, que tem um UIListLayout
     local tabButton = create("TextButton", parent, {
         Name = "TabButton",
         Text = title,
@@ -152,7 +153,6 @@ function UILibrary.createTab(parent, title)
 end
 
 function UILibrary.createCategory(parent, title)
-    -- As categorias vão dentro do 'contentFrame' da aba, que tem um UIListLayout
     local categoryFrame = create("Frame", parent, {
         Name = "Categoria",
         BackgroundTransparency = 1,
