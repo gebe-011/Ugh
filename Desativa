@@ -1,0 +1,27 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Função para restaurar colisão (desativar noclip)
+local function disableNoclip()
+	for _, part in pairs(character:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = true
+		end
+	end
+end
+
+-- Remove todos os event connections anteriores relacionados a seguir ou noclip
+for _, connection in pairs(getconnections(RunService.Heartbeat)) do
+	connection:Disable()
+end
+for _, connection in pairs(getconnections(RunService.Stepped)) do
+	connection:Disable()
+end
+
+-- Parar o movimento atual
+humanoid:Move(Vector3.new(0, 0, 0), false)
+disableNoclip()
