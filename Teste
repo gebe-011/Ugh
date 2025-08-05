@@ -1,0 +1,49 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local url = "https://raw.githubusercontent.com/gebe-011/Ugh/refs/heads/main/s/n"
+
+local seguir = false
+local destino = nil
+
+-- Função que checa o valor no GitHub
+local function checarControle()
+    local sucesso, resultado = pcall(function()
+        return HttpService:GetAsync(url)
+    end)
+
+    if sucesso then
+        local comando = resultado:lower():gsub("%s+", "") -- remove espaços e deixa em minúsculo
+        if comando == "sim" then
+            seguir = true
+        elseif comando == "não" or comando == "nao" then
+            seguir = false
+        end
+    else
+        warn("Erro ao checar link:", resultado)
+    end
+end
+
+-- Loop de movimentação
+RunService.Heartbeat:Connect(function()
+    if seguir then
+        local localPlayer = Players.LocalPlayer
+        local playerAlvo = Players:FindFirstChild("Gabriel55477uui")
+
+        if playerAlvo and playerAlvo.Character and playerAlvo.Character:FindFirstChild("HumanoidRootPart") and
+           localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+
+            local meuHRP = localPlayer.Character.HumanoidRootPart
+            local alvoHRP = playerAlvo.Character.HumanoidRootPart
+            local direcao = (alvoHRP.Position - meuHRP.Position).Unit
+            localPlayer.Character:Move(Vector3.new(direcao.X, 0, direcao.Z))
+        end
+    end
+end)
+
+-- Loop de verificação do link (a cada 3 segundos)
+while true do
+    checarControle()
+    wait(3)
+end
