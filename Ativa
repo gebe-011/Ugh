@@ -1,0 +1,52 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- Nome do jogador alvo
+local targetName = "darkzadas011"
+
+-- Função para ativar noclip
+local function enableNoclip()
+	for _, part in pairs(character:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = false
+		end
+	end
+end
+
+-- Atualiza noclip a cada frame
+RunService.Stepped:Connect(function()
+	enableNoclip()
+end)
+
+-- Função principal para seguir o jogador alvo
+local function followTarget(targetPlayer)
+	RunService.Heartbeat:Connect(function()
+		if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+			local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+			humanoid:MoveTo(targetPos)
+		end
+	end)
+end
+
+-- Aguarda o jogador alvo aparecer
+local function waitForTarget()
+	local target = Players:FindFirstChild(targetName)
+	if not target then
+		Players.PlayerAdded:Connect(function(player)
+			if player.Name == targetName then
+				wait(1)
+				followTarget(player)
+			end
+		end)
+	else
+		wait(1)
+		followTarget(target)
+	end
+end
+
+waitForTarget()
